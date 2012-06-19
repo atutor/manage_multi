@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="ISO-8859-1"?> 
+<module version="0.1"> 
+    <name lang="en">ATutor MultiSite Manager</name> 
+    <description lang="en">This module is used to create and manage ATutor subsites. A single ATutor code base can be used to run any number of independent ATutor sites, either as subdirectories of a single domain, or as fully independent domains. </description> 
+    <maintainers>
+        <maintainer> 
+            <name>ATutor Team</name> 
+            <email>info@atutor.ca</email> 
+        </maintainer>
+    </maintainers> 
+    <url>http://atutor.ca</url> 
+    <license>BSD</license> 
+	<release> 
+        <version>0.7</version> 
+        <date>2012-22-01</date> 
+        <state>stable</state> 
+        <notes></notes> 
+    </release> 
+</module>
