@@ -2,7 +2,9 @@
 define('AT_INCLUDE_PATH', '../../include/');
 require (AT_INCLUDE_PATH.'vitals.inc.php');
 admin_authenticate(AT_ADMIN_PRIV_MANAGE_MULTI);
-require('mm_connect.php');
+require('lib/mysql_multisite_connect.inc.php');
+
+//mysql_select_db(DB_NAME_MULTISITE, $db_multisite);
 
 if($_REQUEST['delete'] == 'Delete'){
 	require (AT_INCLUDE_PATH.'header.inc.php');
@@ -16,7 +18,7 @@ if($_REQUEST['delete'] == 'Delete'){
 }else if($_REQUEST['submit_yes'] == "Yes"){
 	$delete_id = intval($_REQUEST['del_site_id']);
 	$sql = "DELETE from subsites WHERE site_id = '$delete_id'";
-	if($result = mysql_query($sql, $db_mm)){
+	if($result = mysql_query($sql, $db_multisite)){
 		$msg->addFeedback('SITE_DELETED');
 	}else{
 		$msg->addFeedback('SITE_DELETED_FAILED');
@@ -30,11 +32,10 @@ if($_REQUEST['delete'] == 'Delete'){
 //
 }
 require (AT_INCLUDE_PATH.'header.inc.php');
-debug($_REQUEST);
 
 // Display a table listing all subsites.
 $sql = "SELECT * from subsites";
-$result = mysql_query($sql, $db_mm);
+$result = mysql_query($sql, $db_multisite);
 include('index.tmpl.php');
 
 require (AT_INCLUDE_PATH.'footer.inc.php'); ?>
