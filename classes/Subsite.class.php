@@ -49,7 +49,7 @@ class Subsite {
 	function Subsite() 
 	{
 		$this->make_multi_script = 'exec/make_multi.sh';
-		$this->subsite_main_dir = $this->get_subsite_main_dir();
+		$this->subsite_main_dir = realpath($_SERVER['DOCUMENT_ROOT'] . '/../') . '/';
 		$this->default_admin_user_name = 'admin';
 	}
 
@@ -192,6 +192,20 @@ class Subsite {
 		return true;
 	}
 
+	/**
+	 * Return the directory where subsites reside.
+	 */
+	public function get_subsite_main_dir() {
+		return $this->subsite_main_dir;
+	}
+	
+	/**
+	 * Return the directory where subsites reside.
+	 */
+	public function get_make_multi_script() {
+		return $this->make_multi_script;
+	}
+	
 	/**
 	 * Validate all the input parameters for the site creation
 	 */
@@ -372,13 +386,6 @@ class Subsite {
 			return false;
 		}
 	}
-	/**
-	 * Return the directory where subsites reside.
-	 */
-	private function get_subsite_main_dir() {
-		return realpath($_SERVER['DOCUMENT_ROOT'] . '/../') . '/';
-	}
-	
 	/**
 	 * Return the full URL based on the given site name
 	 * @param string $site_name

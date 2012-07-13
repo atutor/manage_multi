@@ -5,6 +5,8 @@ admin_authenticate(AT_ADMIN_PRIV_MANAGE_MULTI);
 
 require('classes/Subsite.class.php');
 
+$subsite = new Subsite();
+
 if($_POST['submit']){
 	// make sure the new subsite is unique
 	$_POST['site_name'] = str_replace(' ', '', $_POST['site_name']);
@@ -15,7 +17,6 @@ if($_POST['submit']){
 	$_POST['instructor_lname'] = str_replace('<', '', trim($_POST['instructor_lname']));
 	$_POST['instructor_email'] = trim($_POST['instructor_email']);
 	
-	$subsite = new Subsite();
 	$subsite->create($_POST['site_name'], $_POST['site_display_name'], $_POST['site_admin_email'], $_POST['just_social'], $_POST['instructor_username'],
 	                 $_POST['instructor_fname'], $_POST['instructor_lname'], $_POST['instructor_email'], $_POST['enabled']);
 }
@@ -29,7 +30,7 @@ $msg->printAll();
 <h2>Create/Edit Subsite Database</h2>
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" name="make_multi" method="post">
 	<div class="row">
-		<p><?php echo _AT('create_subsite_notes', realpath($make_multi_script), $subsite_main_dir); ?></p>
+		<p><?php echo _AT('create_subsite_notes', realpath($subsite->make_multi_script), $subsite->subsite_main_dir); ?></p>
 	</div>
 	
 	<fieldset class="group_form"><legend class="group_form"><?php echo _AT('site_info'); ?></legend>
