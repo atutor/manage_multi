@@ -58,41 +58,52 @@ $msg->printAll();
 
 <div class="input-form">
 <h2>Setup Subsite Database</h2>
-<p><?php echo _AT('config_multi_desc'); ?></p>
+
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>"  name="setup_multi" method="post" class="form_input">
-	<table cellspacing="0" cellpadding="1" border="0">
-	<tr>
-		<td><span class="required" title="Required Field">*</span><b><label for="db">Database Hostname:</label></b><br />
-			Hostname of the database server. Default: <kbd>localhost</kbd></td>
-		<td valign="middle"><input type="text" name="db_host" id="db" value="<?php if (!empty($_POST['db_host'])) { echo stripslashes(htmlspecialchars($_POST['db_host'])); } else { echo DB_HOST; } ?>" class="formfield" /></td>
-	</tr>
-	<tr>
-		<td><span class="required" title="Required Field">*</span><b><label for="port">Database Port:</label></b><br />
-			The port to the database server. Default: <kbd>3306</kbd></td>
-		<td><input type="text" name="db_port" id="port" value="<?php if (!empty($_POST['db_port'])) { echo stripslashes(htmlspecialchars($_POST['db_port'])); } else { echo DB_PORT; } ?>" class="formfield" /></td>
-	</tr>
-	<tr>
-		<td><span class="required" title="Required Field">*</span><b><label for="username">Database Username:</label></b><br />
-			The username to the database server.</td>
-		<td><input type="text" name="db_login" id="username" value="<?php echo stripslashes(htmlspecialchars($_POST['db_login'])); ?>" class="formfield" /></td>
-	</tr>
-	<tr>
-		<td><span class="required" title="Required Field">*</span><b><label for="pass">Database Password:</label></b><br />
-			The password to the database server.</td>
-		<td><input type="text" name="db_password" id="pass" value="<?php echo stripslashes(htmlspecialchars($_POST['db_password'])); ?>" class="formfield" /></td>
-	</tr>
-	<tr>
-		<td><span class="required" title="Required Field">*</span><b><label for="name">Database Name:</label></b><br />
-			The name of the database to use. It will be created if it does not exist.<br />Default: <kbd>ATutor_manage_multisite</kbd></td>
-		<td><input type="text" name="db_name" id="name" value="<?php if (!empty($_POST['db_name'])) { echo stripslashes(htmlspecialchars($_POST['db_name'])); } else { echo 'ATutor_manage_multisite'; } ?>" class="formfield" /></td>
-	</tr>
-	<tr>
-		<td><div class="optional" title="Optional Field">?</div><b><label for="prefix">Table Prefix:</label></b><br />
-			The prefix to add to table names to avoid conflicts with existing tables.<br />
-			Default: <kbd>AT_</kbd></td>
-		<td><input type="text" name="tb_prefix" id="prefix" value="<?php if (!empty($_POST['tb_prefix'])) { echo stripslashes(htmlspecialchars($_POST['tb_prefix'])); } else { echo TABLE_PREFIX; } ?>" class="formfield" /></td>
-	</tr>
-	</table>
+	<div class="row">
+		<p><?php echo _AT('config_multi_desc'); ?></p><br />
+	</div>
+
+	<div class="row">
+		<span class="required" title="<?php echo _AT('required_field'); ?>">*</span>
+		<label for="db"><?php echo _AT(db_host);?></label><br />
+		<input type="text" name="db_host" id="db" value="<?php if (!empty($_POST['db_host'])) { echo stripslashes(htmlspecialchars($_POST['db_host'])); } else { echo DB_HOST; } ?>" class="formfield" /><br />
+		<small><?php echo _AT(db_host_notes);?></small>
+	</div>
+
+	<div class="row">
+		<span class="required" title="<?php echo _AT('required_field'); ?>">*</span>
+		<label for="db"><?php echo _AT(db_port);?></label><br />
+		<input type="text" name="db_port" id="port" value="<?php if (!empty($_POST['db_port'])) { echo stripslashes(htmlspecialchars($_POST['db_port'])); } else { echo DB_PORT; } ?>" class="formfield" /><br />
+		<small><?php echo _AT(db_port_notes);?></small>
+	</div>
+
+	<div class="row">
+		<span class="required" title="<?php echo _AT('required_field'); ?>">*</span>
+		<label for="db"><?php echo _AT(db_user);?></label><br />
+		<input type="text" name="db_login" id="username" value="<?php echo stripslashes(htmlspecialchars($_POST['db_login'])); ?>" class="formfield" /><br />
+		<small><?php echo _AT(db_user_notes);?></small>
+	</div>
+
+	<div class="row">
+		<span class="required" title="<?php echo _AT('required_field'); ?>">*</span>
+		<label for="db"><?php echo _AT(db_pwd);?></label><br />
+		<input type="text" name="db_password" id="pass" value="<?php echo stripslashes(htmlspecialchars($_POST['db_password'])); ?>" class="formfield" /><br />
+		<small><?php echo _AT(db_pwd_notes);?></small>
+	</div>
+
+	<div class="row">
+		<span class="required" title="<?php echo _AT('required_field'); ?>">*</span>
+		<label for="db"><?php echo _AT(db_name);?></label><br />
+		<input type="text" name="db_name" id="name" value="<?php if (!empty($_POST['db_name'])) { echo stripslashes(htmlspecialchars($_POST['db_name'])); } else { echo 'ATutor_manage_multisite'; } ?>" class="formfield" /><br />
+		<small><?php echo _AT(db_name_notes);?></small>
+	</div>
+
+	<div class="row">
+		<label for="db"><?php echo _AT(tb_prefix);?></label><br />
+		<input type="text" name="tb_prefix" id="prefix" value="<?php if (!empty($_POST['tb_prefix'])) { echo stripslashes(htmlspecialchars($_POST['tb_prefix'])); } else { echo TABLE_PREFIX; } ?>" class="formfield" /><br />
+		<small><?php echo _AT(tb_prefix_notes);?></small>
+	</div>
 
 	<input type="submit" name="submit" />
 </form>

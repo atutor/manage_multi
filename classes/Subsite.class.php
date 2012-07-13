@@ -32,7 +32,11 @@ class Subsite {
 	// all private
 	var $make_multi_script;           // the shell script to create subsite directory
 	var $subsite_main_dir;            // the main directory where all the subsites are created in
-	var $site_url;                 // the url of the subsite, eg, myself.atutor.ca
+	var $site_url;                    // the url of the subsite, eg, myself.atutor.ca
+	var $default_admin_user_name;     // The default subsite admin user name
+	
+	var $session_path;                // store the config.session_path of the main site which is equivalent with the one used by subsites
+	var $main_site_contact_email;     // The from email used to send the confirmation at the end of the subsite creation
 
 	/**
 	* Constructor: Initialize object members
@@ -46,6 +50,7 @@ class Subsite {
 	{
 		$this->make_multi_script = 'exec/make_multi.sh';
 		$this->subsite_main_dir = $this->get_subsite_main_dir();
+		$this->default_admin_user_name = 'admin';
 	}
 
 	/**
@@ -58,37 +63,53 @@ class Subsite {
 	*          the progress or error information are saved into global var $msg
 	* @author  Cindy Qi Li
 	*/
-	public function create($site_name, $enabled) 
+	public function create($site_name, $site_display_name, $admin_email, $just_social, $instructor_username,
+	                       $instructor_fname, $instructor_lname, $instructor_email, $enabled) 
 	{
 		global $msg, $addslashes;
 		
 		$site_name = $addslashes(str_replace(' ', '', $site_name));
+		$admin_email = $addslashes($admin_email);
+		$instructor_username = $addslashes($instructor_username);
+		$instructor_fname = $addslashes($instructor_fname);
+		$instructor_lname = $addslashes($instructor_lname);
+		$instructor_email = $addslashes($instructor_email);
+		$just_social = intval($just_social);
+		$enabled = intval($enabled);
+		
+		// **** verify the input vars ****
+		if (!$this->validate_input($site_name, $site_display_name, $admin_email, 
+		     $instructor_username, $instructor_fname, $instructor_lname, $instructor_email)) {
+			return false;
+		}
+
 		$this->site_url = $addslashes($this->get_site_url($site_name));
-		$enabled = intval(enabled);
 		
-		// Checks on
-		// 1. if there's error from class constructor 
-		// 2. if svn server is up. If not, consider all files manipulated by patch as modified
-		// 3. if the local file is customized by user
-		// 4. if script has write priviledge on local file/folder
-		// 5. if dependent patches have been installed
+		$this->prepare_creation();
 		
-		$this->switch_subsite_manage_db();
-		
-		// check the uniqueness of the requested site
+		// **** check the uniqueness of the requested site ****
 		if (!$this->is_site_unique($this->site_url)) {
 			$msg->addError(array("SUBSITE_ALREADY_EXIST", $this->site_url, implode(", ", $this->get_unique_site_urls($site_name))));
 			$this->finalize();
 			return false;
 		}
 		
-		// create subsite phisical directory
-		if (!$this->create_subsite_dir()) {
+		$subsite_full_path = $this->subsite_main_dir . $this->site_url;
+		
+		// **** create subsite phisical directory ****
+		if (!$this->create_subsite_dir($subsite_full_path)) {
 			$this->finalize();
 			return false;
 		}
 		
-		// create and switch to subsite database
+		// **** create content sub-directories ****
+		create_content_subdir($subsite_full_path . '/content', AT_INCLUDE_PATH . '../images/index.html');
+		if ($msg->containsErrors()) {
+			$this->finalize();
+			return false;
+		}
+		
+		// **** create and switch to subsite database ****
 		$subsite_db_name = $this->get_unique_db_name($site_name, DB_HOST_MULTISITE, DB_PORT_MULTISITE, DB_USER_MULTISITE, DB_PASSWORD_MULTISITE);
 		$subsite_db = create_and_switch_db(DB_HOST_MULTISITE, DB_PORT_MULTISITE, DB_USER_MULTISITE, DB_PASSWORD_MULTISITE, TABLE_PREFIX_MULTISITE, $subsite_db_name);
 		if ($msg->containsErrors()) {
@@ -96,7 +117,7 @@ class Subsite {
 			return false;
 		}
 		
-		// import languages and tables into subsite database
+		// **** import languages and tables into subsite database ****
 		$sqlUtility = new SqlUtility();
 		$sqlUtility->queryFromFile(AT_INCLUDE_PATH . 'install/db/atutor_schema.sql', TABLE_PREFIX_MULTISITE, false);
 		$sqlUtility->queryFromFile(AT_INCLUDE_PATH . 'install/db/atutor_language_text.sql', TABLE_PREFIX_MULTISITE, false);
@@ -106,7 +127,7 @@ class Subsite {
 		}
 		$msg->addFeedback('SUBSITE_TABLES_CREATED');
 		
-		// create mysql user/pwd for subsite database
+		// **** create mysql user/pwd for subsite database ****
 		// the super mysql id for creating mysql user is stored in include/config_multisite.inc.php
 		$mysql_account = $this->get_unique_mysql_account($subsite_db_name);
 		$mysql_pwd = $this->create_mysql_user(DB_HOST_MULTISITE, $mysql_account, $subsite_db_name);
@@ -117,7 +138,20 @@ class Subsite {
 		}
 		$msg->addFeedback(array('MYSQL_ACCT_CREATED', $mysql_account));
 		
-		// Write subsite include/config.inc.php
+		// **** add admin/instructor accounts ****
+		$admin_pwd = $this->get_random_string(10);
+		$admin_pwd_encrypted = sha1($admin_pwd);
+		
+		$instructor_pwd = $this->get_random_string(10);
+		$instructor_pwd_encrypted = sha1($instructor_pwd);
+		
+		install_step_accounts($this->default_admin_user_name, $admin_pwd_encrypted, $admin_email, $site_display_name,
+		                      $admin_email, $instructor_username, $instructor_pwd_encrypted,
+		                      $instructor_fname, $instructor_lname, $instructor_email,
+		                      $just_social, '', $this->session_path, DB_HOST_MULTISITE, DB_PORT_MULTISITE, 
+		                      $mysql_account, $mysql_pwd, $subsite_db_name, TABLE_PREFIX_MULTISITE);
+
+		// **** Write subsite include/config.inc.php ****
 		$filename = $this->subsite_main_dir . $this->site_url . '/include/config.inc.php';
 		
 		if (!file_exists($filename) || !is_writeable($filename)) {
@@ -131,29 +165,94 @@ class Subsite {
 		$content_dir = $this->subsite_main_dir . $this->site_url . '/content/';
 		
 		$smtp = MAIL_USE_SMTP ? 'true' : 'false';
+		$force_get_file = AT_FORCE_GET_FILE ? 'TRUE' : 'FALSE';
 		
 		write_config_file($filename, $mysql_account, $mysql_pwd, DB_HOST_MULTISITE, 
 		                  DB_PORT_MULTISITE, $subsite_db_name, TABLE_PREFIX_MULTISITE,
-		                  $comments, $content_dir, $smtp, AT_FORCE_GET_FILE);
+		                  $comments, $content_dir, $smtp, $force_get_file);
 		chmod($filename, 0444);
 		$msg->addFeedback(array('CONFIG_FILE_WRITTEN', $filename));
 
 		$this->switch_subsite_manage_db();
 		
-		// update database
-		if (!$this->update_table()) {
+		// **** update database ****
+		if (!$this->update_table($this->site_url, $enabled)) {
 			$this->finalize();
 			return false;
 		}
 		$msg->addFeedback('MANAGE_TABLE_UPDATED');
 		
+		// **** send email to admin with admin and instructor login information
+		$this->send_email($this->main_site_contact_email, $admin_email, $full_site_url, $this->default_admin_user_name, $admin_pwd, $instructor_username, $instructor_pwd);
+		
 		$full_site_url = AT_SERVER_PROTOCOL . $this->site_url;
-		$msg->addFeedback(array('CREATE_SUBSITE_SUCCESSFUL', $full_site_url, $full_site_url));
+		$msg->addFeedback(array('CREATE_SUBSITE_SUCCESSFUL', $full_site_url, $full_site_url, $this->default_admin_user_name, $admin_pwd, $instructor_username, $instructor_pwd));
 		
 		$this->finalize();
 		return true;
 	}
 
+	/**
+	 * Validate all the input parameters for the site creation
+	 */
+	private function validate_input($site_name, $site_display_name, $admin_email, 
+		             $instructor_username, $instructor_fname, $instructor_lname, $instructor_email) {
+		global $msg;
+		
+		$missing_fields = array();
+		
+		if (site_name == '') {
+			$missing_fields[] = _AT('site_url');
+		} else if (strlen($site_name) > 20 || !(preg_match("/^[a-zA-Z0-9]([a-zA-Z0-9_-])*$/i", $site_name))) {
+			$msg->addError(array('BAD_NAME', _AT('site_url')));
+		}
+		
+		if ($site_display_name == '') {
+			$missing_fields[] = _AT('site_name');
+		}
+		
+		if ($admin_email == '') {
+			$missing_fields[] = _AT('site_admin_email');
+		} else if (!preg_match("/^[a-z0-9\._-]+@+[a-z0-9\._-]+\.+[a-z]{2,6}$/i", $admin_email)) {
+			$msg->addError(array('CERTAIN_EMAIL_INVALID', _AT('site_admin_email') . ' ' . $admin_email));
+		}
+		
+		if ($admin_email == '') {
+			$missing_fields[] = _AT('site_admin_email');
+		}
+
+		if (site_display_name == '') {
+			$missing_fields[] = _AT('site_name');
+		} else if (strlen($site_name) > 20 || !(preg_match("/^[a-zA-Z0-9]([a-zA-Z0-9_-])*$/i", $site_name))) {
+			$msg->addError(array('BAD_NAME', _AT('site_name')));
+		}
+		
+		if ($instructor_username == '') {
+			$missing_fields[] = _AT('username');
+		}
+
+		if ($instructor_fname == '') {
+			$missing_fields[] = _AT('first_name');
+		}
+		
+		if ($instructor_lname == '') {
+			$missing_fields[] = _AT('last_name');
+		}
+		
+		if ($instructor_email == '') {
+			$missing_fields[] = _AT('instructor_email');
+		} else if (!preg_match("/^[a-z0-9\._-]+@+[a-z0-9\._-]+\.+[a-z]{2,6}$/i", $instructor_email)) {
+			$msg->addError(array('CERTAIN_EMAIL_INVALID', _AT('instructor_email') . ' ' . $instructor_email));
+		}
+		
+		if ($missing_fields) {
+			$missing_fields = implode(', ', $missing_fields);
+			$msg->addError(array('EMPTY_FIELDS', $missing_fields));
+		}
+			
+		return $msg->containsErrors() ? false : true;
+	}
+	
 	/**
 	 * switch to use the multisite management database
 	 */
@@ -164,14 +263,33 @@ class Subsite {
 	}
 	
 	/**
+	 * Prepare class vars and database for the subsite creation
+	 */
+	private function prepare_creation() {
+		global $db_multisite, $db;
+		
+		// The selected db is still the ATutor main db at this point
+		$sql = "SELECT value FROM " . TABLE_PREFIX . "config WHERE name='session_path'";
+		$result = mysql_query($sql, $db);
+		$row = mysql_fetch_assoc($result);
+		$this->session_path = $row['value'];
+		
+		$sql = "SELECT value FROM " . TABLE_PREFIX . "config WHERE name='contact_email'";
+		$result = mysql_query($sql, $db);
+		$row = mysql_fetch_assoc($result);
+		$this->main_site_contact_email = $row['value'];
+		
+		$this->switch_subsite_manage_db();
+	}
+	
+	/**
 	 * Create the phisical subsite directories and config file
 	 */
-	private function create_subsite_dir() {
+	private function create_subsite_dir($subsite_full_path) {
 		global $msg;
 		global $db_multisite;
 		
 		// Create the phisical directory
-		$subsite_full_path = $this->subsite_main_dir . $this->site_url;
 		$shell_output = shell_exec($this->make_multi_script . " " . $subsite_full_path);
 		
 		if (!is_dir($subsite_full_path)) {
@@ -237,12 +355,15 @@ class Subsite {
 	
 	/**
 	 * Update table "subsites"
+	 * @param site_url
+	 * @param @enabled
+	 * @return true/false
 	 */
-	private function update_table() {
+	private function update_table($site_url, $enabled) {
 		global $db_multisite, $msg;
 		
 		// insert the new site into db
-		$sql = "INSERT INTO " . TABLE_PREFIX_MULTISITE . "subsites(site_url, enabled) VALUES('" .$this->site_url ."', '" . $enabled ."')";
+		$sql = "INSERT INTO " . TABLE_PREFIX_MULTISITE . "subsites(site_url, enabled) VALUES('" .$site_url ."', '" . $enabled ."')";
 		
 		if(mysql_query($sql, $db_multisite)){
 			return true;
@@ -358,6 +479,25 @@ class Subsite {
 		
 		// switch back to the ATutor main database
 		mysql_select_db(DB_NAME, $db);
+	}
+	
+	/**
+	 * send email
+	 */
+	private function send_email($from_email, $to_email, $full_subsite_url, $admin_username, $admin_pwd, $instructor_username, $instructor_pwd) {
+		global $msg;
+		
+		require(AT_INCLUDE_PATH . 'classes/phpmailer/atutormailer.class.php');
+		
+		$mail = new ATutorMailer();
+
+		$mail->From     = $from_email;
+		$mail->AddAddress($to_email);
+		$mail->Subject = SITE_NAME . ': ' . _AT('email_confirmation_subject');
+		$mail->Body    = _AT('email_confirmation_subsite_msg', $full_subsite_url, $full_subsite_url, $admin_username, $admin_pwd, $instructor_username, $instructor_pwd)."\n\n";
+		$mail->Send();
+
+		$msg->addFeedback('CONFIRMATION_SENT');
 	}
 }
 
