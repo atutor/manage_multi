@@ -11,13 +11,13 @@
 /************************************************************************/
 // $Id$
 
-if (!defined('AT_INCLUDE_PATH') || !defined('MM_MULTISITE_CONFIG_FILE')) { exit; }
+if (!defined('AT_INCLUDE_PATH') || !defined('AT_MULTISITE_CONFIG_FILE')) { exit; }
 
-if (file_exists(MM_MULTISITE_CONFIG_FILE)) {
-	include(MM_MULTISITE_CONFIG_FILE);
-} else {
+if (file_exists(AT_MULTISITE_CONFIG_FILE)) {
+	include(AT_MULTISITE_CONFIG_FILE);
+} else if (defined($msg)){
 	require(AT_INCLUDE_PATH.'header.inc.php');
-	$msg->printErrors(array('MM_MULTISITE_CONFIG_FILE_NOT_EXIST', MM_MULTISITE_CONFIG_FILE));
+	$msg->printErrors(array('AT_MULTISITE_CONFIG_FILE_NOT_EXIST', AT_MULTISITE_CONFIG_FILE));
 	require(AT_INCLUDE_PATH.'footer.inc.php');
 	exit;
 }
@@ -32,14 +32,5 @@ if (defined('DB_NAME_MULTISITE')) {
 		trigger_error('VITAL#Unable to connect to multisite db.', E_USER_ERROR);
 		exit;
 	}
-/*
-	if (!@mysql_select_db(DB_NAME_MULTISITE, $db_multisite)) {
-		require_once(AT_INCLUDE_PATH . 'classes/ErrorHandler/ErrorHandler.class.php');
-		$err = new ErrorHandler();
-		trigger_error('VITAL#DB connection established, but database "'.DB_NAME_MULTISITE.'" cannot be selected.',
-		              E_USER_ERROR);
-		exit;
-	}
-*/
 }
 ?>

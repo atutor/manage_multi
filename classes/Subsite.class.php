@@ -37,20 +37,37 @@ class Subsite {
 	
 	var $session_path;                // store the config.session_path of the main site which is equivalent with the one used by subsites
 	var $main_site_contact_email;     // The from email used to send the confirmation at the end of the subsite creation
+	
+	// Subsite status
+	var $enabled;
 
 	/**
 	* Constructor: Initialize object members
+	* This is a multiple constructor that can be used to initialize 2 types of subsite object
+	* 1. Not passing any parameter to create an empty subsite object in preparation for creating a new subsite
+	* 2. Passsing in a subsite url to create object for an existing subsite
 	* @access  public
 	* @param   $patch_array	The name of the file to find charset definition
 	*          $patch_summary_array
 	*          $skipFilesModified
 	* @author  Cindy Qi Li
 	*/
-	function Subsite() 
+	function Subsite($site_url = null) 
 	{
-		$this->make_multi_script = 'exec/make_multi.sh';
-		$this->subsite_main_dir = realpath($_SERVER['DOCUMENT_ROOT'] . '/../') . '/';
-		$this->default_admin_user_name = 'admin';
+		if ($site_url === null) { // in preparation to create a new subsite
+			$this->make_multi_script = 'exec/make_multi.sh';
+			$this->subsite_main_dir = realpath($_SERVER['DOCUMENT_ROOT'] . '/../') . '/';
+			$this->default_admin_user_name = 'admin';
+		} else { // an existing subsite
+			$this->site_url = $site_url;
+			
+			$this->switch_subsite_manage_db();
+			
+			$info = $this->get_subsite_info($site_url);
+			$this->enabled = $info['enabled'];
+			
+			$this->finalize();
+		}
 	}
 
 	/**
@@ -185,6 +202,8 @@ class Subsite {
 		// **** send email to admin with admin and instructor login information
 		$this->send_email($this->main_site_contact_email, $admin_email, $full_site_url, $this->default_admin_user_name, $admin_pwd, $instructor_username, $instructor_pwd);
 		
+		$this->enabled = $enabled;
+		
 		$full_site_url = AT_SERVER_PROTOCOL . $this->site_url;
 		$msg->addFeedback(array('CREATE_SUBSITE_SUCCESSFUL', $full_site_url, $full_site_url, $this->default_admin_user_name, $admin_pwd, $instructor_username, $instructor_pwd));
 		
@@ -192,6 +211,24 @@ class Subsite {
 		return true;
 	}
 
+	/**
+	 * Enable a subsite
+	 */
+	public function enable() {
+		$this->switch_subsite_manage_db();
+		$this->set_status($this->site_url, 1);
+		$this->finalize();
+	}
+	
+	/**
+	 * Enable a subsite
+	 */
+	public function disable() {
+		$this->switch_subsite_manage_db();
+		$this->set_status($this->site_url, 0);
+		$this->finalize();
+	}
+	
 	/**
 	 * Return the directory where subsites reside.
 	 */
@@ -204,6 +241,36 @@ class Subsite {
 	 */
 	public function get_make_multi_script() {
 		return $this->make_multi_script;
+	}
+	
+	/**
+	 * Check whether the subsite is enabled
+	 */
+	public function isEnabled() {
+		return $this->enabled ? true : false;
+	}
+	
+	/** 
+	 * Return the subsite information
+	 */
+	private function get_subsite_info($site_url) {
+		global $db_multisite, $addslashes;
+		
+		$sql = "SELECT * FROM " . TABLE_PREFIX_MULTISITE . "subsites where site_url = '" . $addslashes($site_url) . "'";
+		$result = mysql_query($sql, $db_multisite);
+		return mysql_fetch_assoc($result);
+	}
+	
+	/**
+	 * Set enable/disable flag
+	 */
+	private function set_status($site_url, $enable) {
+		global $db_multisite, $addslashes;
+		
+		$enable = intval($enable);
+		
+		$sql = "UPDATE " . TABLE_PREFIX_MULTISITE . "subsites SET enabled = '" . $enable . "' WHERE site_url = '" . $addslashes($site_url) . "'";
+		return mysql_query($sql, $db_multisite);
 	}
 	
 	/**

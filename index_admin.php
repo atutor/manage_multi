@@ -3,39 +3,35 @@ define('AT_INCLUDE_PATH', '../../include/');
 require (AT_INCLUDE_PATH.'vitals.inc.php');
 admin_authenticate(AT_ADMIN_PRIV_MANAGE_MULTI);
 require('lib/mysql_multisite_connect.inc.php');
+require('classes/Subsite.class.php');
 
-//mysql_select_db(DB_NAME_MULTISITE, $db_multisite);
-
-if($_REQUEST['delete'] == 'Delete'){
-	require (AT_INCLUDE_PATH.'header.inc.php');
-	$hidden_vars['del_site_id'] = intval($_REQUEST['site_id']);
-	$confirm = array('DELETE_SUBSITE', $names_html);
-	$msg->addConfirm($confirm, $hidden_vars);
-	$msg->printConfirm();
-	require (AT_INCLUDE_PATH.'footer.inc.php');
-	exit;
-
-}else if($_REQUEST['submit_yes'] == "Yes"){
-	$delete_id = intval($_REQUEST['del_site_id']);
-	$sql = "DELETE from subsites WHERE site_id = '$delete_id'";
-	if($result = mysql_query($sql, $db_multisite)){
-		$msg->addFeedback('SITE_DELETED');
-	}else{
-		$msg->addFeedback('SITE_DELETED_FAILED');
-	}
-	header('Location:index_admin.php');
-} else if ($_REQUEST['submit_no'] == "No"){
-	$msg->addFeedback('CANCELLED');
-	header('Location:index_admin.php');
-} else if ($_REQUEST['submit'] == 'edit'){
-
-//
+if(isset($_POST['delete'], $_POST['site_url'])){
+	$subsite = new Subsite($_POST['site_url']);
+	
+} else if(isset($_POST['enable'], $_POST['site_url'])){
+	$subsite = new Subsite($_POST['site_url']);
+	$subsite->enable();
+	$msg->addFeedback('ACTION_COMPLETED_SUCCESSFULLY');
+} else if (isset($_POST['disable'], $_POST['site_url'])){
+	$subsite = new Subsite($_POST['site_url']);
+	$subsite->disable();
+	$msg->addFeedback('ACTION_COMPLETED_SUCCESSFULLY');
+} else if (isset($_POST['disable']) || isset($_POST['enable']) || isset($_POST['delete'])) {
+	$msg->addError('NO_ITEM_SELECTED');
 }
-require (AT_INCLUDE_PATH.'header.inc.php');
 
 // Display a table listing all subsites.
-$sql = "SELECT * from subsites";
+mysql_select_db(DB_NAME_MULTISITE, $db_multisite);
+
+$sql = "SELECT * from " . TABLE_PREFIX_MULTISITE . "subsites";
 $result = mysql_query($sql, $db_multisite);
-include('index.tmpl.php');
+
+mysql_select_db(DB_NAME, $db);
+
+$_custom_head = '    <script src="'.$_base_path.'mods/manage_multi/js/manage_multi.js"></script>';
+require (AT_INCLUDE_PATH.'header.inc.php');
+$msg->printAll();
+
+include('index_admin.tmpl.php');
 
 require (AT_INCLUDE_PATH.'footer.inc.php'); ?>
