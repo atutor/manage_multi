@@ -28,9 +28,7 @@ if (!defined('AT_INCLUDE_PATH')) { exit; }
  *    if non-zero specifies in minutes how often the module's cron job should be run.
  *    set to 0 or not set to disable.
  */
-//$_course_privilege = TRUE; // possible values: FALSE | AT_PRIV_ADMIN | TRUE
 $_admin_privilege  = TRUE; // possible values: FALSE | TRUE
-//$_cron_interval    = 35; // run every 30 minutes
 
 
 /********
@@ -40,14 +38,12 @@ $_admin_privilege  = TRUE; // possible values: FALSE | TRUE
 //$directory = AT_CONTENT_DIR .'hello_world';
 
 // check if the directory is writeable
-/*
-if (!is_dir($directory) && !@mkdir($directory)) {
-	$msg->addError(array('MODULE_INSTALL', '<li>'.$directory.' does not exist. Please create it.</li>'));
-} else if (!is_writable($directory) && @chmod($directory, 0666)) {
-	$msg->addError(array('MODULE_INSTALL', '<li>'.$directory.' is not writeable. On Unix issue the command <kbd>chmod a+rw</kbd>.</li>'));
+
+if (defined('IS_SUBSITE') && IS_SUBSITE) {
+	$msg->addError(array('MODULE_INSTALL', '<li>This module cannot be installed on subsites.</li>'));
 }
 
-*/
+
 /******
  * the following code checks if there are any errors (generated previously)
  * then uses the SqlUtility to run any database queries it needs, ie. to create

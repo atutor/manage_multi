@@ -45,13 +45,9 @@ class Subsite {
 	/**
 	* Constructor: Initialize object members
 	* This is a multiple constructor that can be used to initialize 2 types of subsite object
-	* 1. Not passing any parameter to create an empty subsite object in preparation for creating a new subsite
-	* 2. Passsing in a subsite url to create object for an existing subsite
+	* 1. No parameter: create an empty subsite object in preparation for creating a new subsite
+	* 2. One string parameter "subsite url": create an object for an existing subsite
 	* @access  public
-	* @param   $patch_array	The name of the file to find charset definition
-	*          $patch_summary_array
-	*          $skipFilesModified
-	* @author  Cindy Qi Li
 	*/
 	function Subsite($site_url = null) 
 	{
@@ -81,10 +77,8 @@ class Subsite {
 	/**
 	* Main process to create subsite.
 	* @access  public
-	* @param   site_name string
-	* @param   enabled   0/1
 	* @return  true  if subsite is successfully created
-	*          false if failed
+	*          false if an error occurred. The error messages are saved into the global var $msg
 	*          the progress or error information are saved into global var $msg
 	* @author  Cindy Qi Li
 	*/
@@ -354,7 +348,7 @@ class Subsite {
 	/**
 	 * Parse config file
 	 * @param config file: the location of the config file
-	 * @return an array of the database-related config information
+	 * @return an array of the database-related config information. Return false if an error occurred.
 	 */
 	private function parse_config_file($config_file) {
 		if (!file_exists($config_file)) {
@@ -542,7 +536,7 @@ class Subsite {
 	}
 	
 	/**
-	 * Drop mysql user
+	 * Drop mysql user account
 	 */
 	private function drop_mysql_user($db_host, $mysql_account, $mysql_super_account) {
 		global $db_multisite, $msg;
@@ -669,16 +663,6 @@ class Subsite {
 	}
 	
 	/**
-	 * switch back to ATutor main database
-	 */
-	private function finalize(){
-		global $db;
-		
-		// switch back to the ATutor main database
-		mysql_select_db(DB_NAME, $db);
-	}
-	
-	/**
 	 * send email
 	 */
 	private function send_email($from_email, $to_email, $full_subsite_url, $admin_username, $admin_pwd, $instructor_username, $instructor_pwd) {
@@ -695,6 +679,25 @@ class Subsite {
 		$mail->Send();
 
 		$msg->addFeedback('CONFIRMATION_SENT');
+	}
+	/**
+	 * switch back to ATutor main database
+	 */
+	private function finalize(){
+		global $db;
+		
+		// switch back to the ATutor main database
+		mysql_select_db(DB_NAME, $db);
+	}
+	
+	/**
+	 * switch back to ATutor main database
+	 */
+	private function finalize(){
+		global $db;
+		
+		// switch back to the ATutor main database
+		mysql_select_db(DB_NAME, $db);
 	}
 }
 
