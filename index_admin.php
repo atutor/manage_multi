@@ -6,8 +6,8 @@ require('lib/mysql_multisite_connect.inc.php');
 require('classes/Subsite.class.php');
 
 if(isset($_POST['delete'], $_POST['site_url'])){
-	$subsite = new Subsite($_POST['site_url']);
-	
+	header('Location: delete_subsite.php?site='.urlencode($_POST['site_url']));
+	exit;
 } else if(isset($_POST['enable'], $_POST['site_url'])){
 	$subsite = new Subsite($_POST['site_url']);
 	$subsite->enable();

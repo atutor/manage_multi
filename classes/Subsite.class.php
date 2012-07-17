@@ -25,6 +25,7 @@ if (!defined('AT_INCLUDE_PATH')) { exit; }
 require(AT_INCLUDE_PATH . 'classes/sqlutility.class.php');
 require(AT_INCLUDE_PATH . 'install/install.inc.php');
 require(AT_INCLUDE_PATH . 'install/config_template.php');
+require(AT_INCLUDE_PATH . '../mods/_core/file_manager/filemanager.inc.php');
 require(AT_INCLUDE_PATH . '../mods/manage_multi/lib/mysql_multisite_connect.inc.php');
 
 class Subsite {
@@ -54,13 +55,20 @@ class Subsite {
 	*/
 	function Subsite($site_url = null) 
 	{
+		global $msg;
+		
+		$this->subsite_main_dir = realpath($_SERVER['DOCUMENT_ROOT'] . '/../') . '/';
+		$this->default_admin_user_name = 'admin';
+		
 		if ($site_url === null) { // in preparation to create a new subsite
 			$this->make_multi_script = 'exec/make_multi.sh';
-			$this->subsite_main_dir = realpath($_SERVER['DOCUMENT_ROOT'] . '/../') . '/';
-			$this->default_admin_user_name = 'admin';
 		} else { // an existing subsite
-			$this->site_url = $site_url;
+			$this->site_url = $this->get_valid_url($site_url);
 			
+			if (!$this->site_url) {
+				$msg->addError(array('ONE_INVALID_URL', $site_url));
+				return false;
+			}
 			$this->switch_subsite_manage_db();
 			
 			$info = $this->get_subsite_info($site_url);
@@ -147,7 +155,7 @@ class Subsite {
 		// **** create mysql user/pwd for subsite database ****
 		// the super mysql id for creating mysql user is stored in include/config_multisite.inc.php
 		$mysql_account = $this->get_unique_mysql_account($subsite_db_name);
-		$mysql_pwd = $this->create_mysql_user(DB_HOST_MULTISITE, $mysql_account, $subsite_db_name);
+		$mysql_pwd = $this->create_mysql_user(DB_HOST_MULTISITE, $mysql_account, $subsite_db_name, DB_USER_MULTISITE);
 		
 		if (!$mysql_pwd) {
 			$this->finalize();
@@ -212,9 +220,57 @@ class Subsite {
 	}
 
 	/**
+	 * Delete a subsite
+	 */
+	public function delete() {
+		if (!$this->site_url) return false;
+		
+		$site_dir = $this->subsite_main_dir . $this->site_url;
+		// Parse subsite config file
+		$config_file = $site_dir . '/include/config.inc.php';
+		
+		$site_configs = $this->parse_config_file($config_file);
+		if (!$site_configs) {
+			$this->finalize();
+			return false;
+		}
+		
+		// remove table entry
+		$this->switch_subsite_manage_db();
+		if (!$this->remove_table_entry($this->site_url)) {
+			$this->finalize();
+			return false;
+		}
+		
+		// drop database
+		if (!$this->drop_db($site_configs['DB_NAME'], DB_USER_MULTISITE)) {
+			$this->finalize();
+			return false;
+		}
+		
+		// delete mysql account
+		if (!$this->drop_mysql_user($site_configs['DB_HOST'], $site_configs['DB_USER'], DB_USER_MULTISITE)) {
+			$this->finalize();
+			return false;
+		}
+		
+		// delete phisical directory
+		if (!clr_dir($site_dir)) {
+			$msg->addError(array('DEL_DIR_FAILED', $site_dir));
+			$this->finalize();
+			return false;
+		}
+		
+		$this->finalize();
+		return true;
+	}
+	
+	/**
 	 * Enable a subsite
 	 */
 	public function enable() {
+		if (!$this->site_url) return false;
+		
 		$this->switch_subsite_manage_db();
 		$this->set_status($this->site_url, 1);
 		$this->finalize();
@@ -224,6 +280,8 @@ class Subsite {
 	 * Enable a subsite
 	 */
 	public function disable() {
+		if (!$this->site_url) return false;
+		
 		$this->switch_subsite_manage_db();
 		$this->set_status($this->site_url, 0);
 		$this->finalize();
@@ -250,6 +308,12 @@ class Subsite {
 		return $this->enabled ? true : false;
 	}
 	
+	/**
+	 * Check if the url is the valid
+	 */
+	private function get_valid_url($url) {
+		return preg_match('/^[A-Za-z0-9.]+$/', $url) ? $url : false;
+	}
 	/** 
 	 * Return the subsite information
 	 */
@@ -274,10 +338,38 @@ class Subsite {
 	}
 	
 	/**
+	 * Remove subsite from table "subsites"
+	 */
+	private function remove_table_entry($site_url) {
+		global $db_multisite, $addslashes, $msg;
+		
+		$sql = "DELETE FROM " . TABLE_PREFIX_MULTISITE . "subsites WHERE site_url = '" . $addslashes($site_url) . "'";
+		if (!mysql_query($sql, $db_multisite)) {
+			$msg->addError('CANNOT_REMOVE_TABLE_ENTRY');
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * Parse config file
+	 * @param config file: the location of the config file
+	 * @return an array of the database-related config information
+	 */
+	private function parse_config_file($config_file) {
+		if (!file_exists($config_file)) {
+			$msg->addError(array('CONFIG_FILE_NOT_EXIST', $config_file));
+			return false;
+		}
+		
+		return parse_config_file($config_file);
+	}
+	
+	/**
 	 * Validate all the input parameters for the site creation
 	 */
 	private function validate_input($site_name, $site_display_name, $admin_email, 
-		             $instructor_username, $instructor_fname, $instructor_lname, $instructor_email) {
+	                 $instructor_username, $instructor_fname, $instructor_lname, $instructor_email) {
 		global $msg;
 		
 		$missing_fields = array();
@@ -413,25 +505,56 @@ class Subsite {
 	/**
 	 * Create mysql user and grant full permission on subsite database
 	 */
-	private function create_mysql_user($db_host, $mysql_account, $subsite_db_name) {
+	private function create_mysql_user($db_host, $mysql_account, $subsite_db_name, $super_mysql_acccount) {
 		global $db_multisite, $msg;
 		
 		$mysql_pwd = $this->get_random_string(10);
 		
 		$sql = "CREATE USER '" . $mysql_account . "'@'" . $db_host . "' IDENTIFIED BY '" . $mysql_pwd . "'";
 		if (!mysql_query($sql, $db_multisite)) {
-			$msg->addError(array('CREATE_MYSQL_ACCT_FAILED', $mysql_account, mysql_error($db_multisite), DB_USER_MULTISITE));
+			$msg->addError(array('CREATE_MYSQL_ACCT_FAILED', $mysql_account, mysql_error($db_multisite), $super_mysql_acccount));
 			return false;
 		}
 		
 		$sql = "GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP ON " . $subsite_db_name . 
 		       ".* TO '" . $mysql_account . "'@'" . $db_host . "'";
 		if (!mysql_query($sql, $db_multisite)) {
-			$msg->addError(array('GRANT_PRIV_FAILED', DB_USER_MULTISITE));
+			$msg->addError(array('GRANT_PRIV_FAILED', $super_mysql_acccount));
 			return false;
 		}
 		
 		return $mysql_pwd;
+	}
+	
+	/**
+	 * Drop database
+	 */
+	private function drop_db($db, $mysql_super_account) {
+		global $db_multisite, $msg;
+		
+		$sql = "DROP DATABASE " . $db;
+		if (!mysql_query($sql, $db_multisite)) {
+			$msg->addError(array('DROP_DB_FAILED', $db, mysql_error($db_multisite), $mysql_super_account));
+			return false;
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * Drop mysql user
+	 */
+	private function drop_mysql_user($db_host, $mysql_account, $mysql_super_account) {
+		global $db_multisite, $msg;
+		
+		$sql = "DROP USER '" . $mysql_account . "'@'" . $db_host . "'";
+		
+		if (!mysql_query($sql, $db_multisite)) {
+			$msg->addError(array('DROP_MYSQL_ACCT_FAILED', $mysql_account, mysql_error($db_multisite), $mysql_super_account));
+			return false;
+		}
+		
+		return true;
 	}
 	
 	/**
