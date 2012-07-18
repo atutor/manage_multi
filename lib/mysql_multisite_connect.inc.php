@@ -15,9 +15,9 @@ if (!defined('AT_INCLUDE_PATH') || !defined('AT_MULTISITE_CONFIG_FILE')) { exit;
 
 if (file_exists(AT_MULTISITE_CONFIG_FILE)) {
 	include(AT_MULTISITE_CONFIG_FILE);
-} else if (defined($msg)){
+} else if ($msg){
 	require(AT_INCLUDE_PATH.'header.inc.php');
-	$msg->printErrors(array('AT_MULTISITE_CONFIG_FILE_NOT_EXIST', AT_MULTISITE_CONFIG_FILE));
+	$msg->printErrors(array('MULTISITE_CONFIG_FILE_NOT_EXIST', AT_MULTISITE_CONFIG_FILE));
 	require(AT_INCLUDE_PATH.'footer.inc.php');
 	exit;
 }

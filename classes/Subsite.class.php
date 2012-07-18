@@ -690,15 +690,6 @@ class Subsite {
 		mysql_select_db(DB_NAME, $db);
 	}
 	
-	/**
-	 * switch back to ATutor main database
-	 */
-	private function finalize(){
-		global $db;
-		
-		// switch back to the ATutor main database
-		mysql_select_db(DB_NAME, $db);
-	}
 }
 
 ?>
