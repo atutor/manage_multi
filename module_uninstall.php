@@ -10,20 +10,6 @@
  */
 if (!defined('AT_INCLUDE_PATH')) { exit; }
 
-/********
- * the following code is used for removing a module-specific directory created in module_install.php.
- * it generates appropriate error messages to aid in its creation.
- */
-$directory = AT_CONTENT_DIR .'hello_world';
-
-// check if the directory exists
-if (is_dir($directory)) {
-	require(AT_INCLUDE_PATH.'../mods/_core/file_manager/filemanager.inc.php');
-
-	if (!clr_dir($directory))
-		$msg->addError(array('MODULE_UNINSTALL', '<li>'.$directory.' can not be removed. Please manually remove it.</li>'));
-}
-
 /******
  * the following code checks if there are any errors (generated previously)
  * then uses the SqlUtility to run reverted database queries of module.sql, 

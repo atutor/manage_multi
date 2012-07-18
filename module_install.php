@@ -31,12 +31,6 @@ if (!defined('AT_INCLUDE_PATH')) { exit; }
 $_admin_privilege  = TRUE; // possible values: FALSE | TRUE
 
 
-/********
- * the following code is used for creating a module-specific directory.
- * it generates appropriate error messages to aid in its creation.
- */
-//$directory = AT_CONTENT_DIR .'hello_world';
-
 // check if the directory is writeable
 
 if (defined('IS_SUBSITE') && IS_SUBSITE) {
