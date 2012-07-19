@@ -17,10 +17,10 @@ if ($_POST['submit']){
 	
 	if (!$msg->containsErrors()) {
 		// create database to manage multisite
-		create_and_switch_db($_POST['db_host'], $_POST['db_port'], $_POST['db_login'], $_POST['db_password'], $_POST['tb_prefix'], $_POST['db_name']);
+		$db = create_and_switch_db($_POST['db_host'], $_POST['db_port'], $_POST['db_login'], $_POST['db_password'], $_POST['tb_prefix'], $_POST['db_name']);
 		
 		$sqlUtility = new SqlUtility();
-		$sqlUtility->queryFromFile('include/atutor_multisite_schema.sql', $addslashes($_POST['tb_prefix']));
+		$sqlUtility->queryFromFile('include/atutor_multisite_schema.sql', $addslashes($_POST['tb_prefix']), false);
 		
 		// switch to the main database
 		@mysql_select_db(DB_NAME, $db);

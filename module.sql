@@ -3,6 +3,7 @@
 INSERT INTO `language_text` VALUES ('en', '_module','manage_multi','Manage Subsites',NOW(),'');
 INSERT INTO `language_text` VALUES ('en', '_module','config_multi','Initial Configuration',NOW(),'');
 INSERT INTO `language_text` VALUES ('en', '_module','create_subsite','Create Subsite',NOW(),'');
+INSERT INTO `language_text` VALUES ('en', '_module','delete_subsite','Delete Subsite',NOW(),'');
 INSERT INTO `language_text` VALUES ('en', '_module','subsite_url','Subsite URL',NOW(),'');
 INSERT INTO `language_text` VALUES ('en', '_module','create_subsite_notes','Note: Before creating a subsite, change the ownship of the shell script <span style="font-weight:bold;">%1s</span> to make sure it has write permission to directory <span style="font-weight:bold;">%2s</span>.',NOW(),'');
 INSERT INTO `language_text` VALUES ('en', '_module','site_name_contain_only','May contain only letters, numbers, underscores or hyphens.',now(),'create subsites');
@@ -30,7 +31,7 @@ INSERT INTO `language_text` VALUES ('en', '_module','tb_prefix_notes','The prefi
 INSERT INTO `language_text` VALUES ('en', '_module','instructor_email','Instructor Email', now() ,'create subsites');
 INSERT INTO `language_text` VALUES ('en', '_module','email_confirmation_subsite_msg','The subsite has been created successfully. <br /><br />Access it via <a href="%1s">%2s</a> with these logins: <br /><br />Admin ID: %3s<br />Admin password: %4s<br /><br />Instructor ID: %5s<br />Instructor password: %6s.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_module','manage_multi_text','This is a description of managing ATutor subsites.',NOW(),'');
-INSERT INTO `language_text` VALUES ('en', '_module','config_multi_desc','Use the form below to setup a publicly accessible database, independent of this ATutor installation, that can be accessed read-only by all subsites created. Note that these preparations are essential:<br /> 1. Create a writable <span style="font-weight: bold;">include/config_multisite.inc.php</span> in ATutor root directory;<br />2. Provide a MySQL ID that has privileges to create database, create mysql account and grant privilege.',NOW(),'');
+INSERT INTO `language_text` VALUES ('en', '_module','config_multi_desc','Use the form below to setup a publicly accessible database, independent of this ATutor installation, that can be accessed read-only by all subsites created. Note that these preparations are essential:<br /> 1. Create a writable <span style="font-weight: bold;">include/config_multisite.inc.php</span> in ATutor root directory;<br />2. Provide a MySQL ID with these privileges: <dl><dt>Select/insert/update/delete tables</dt><dt>Create/drop</dt><dt>Show databases</dt><dt>Create user</dt><dt>Grant</dt></dl>',NOW(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_EMPTY_ADMIN_USER','Administrator username cannot be empty.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_INVALID_ADMIN_USER','Administrator username is not valid.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_EMPTY_ADMIN_PWD','Administrator password cannot be empty.',now(),'');
@@ -77,3 +78,5 @@ INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_MANAGE_TABLE_UPDA
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_DIR_CANNOT_CREATE','%s directory does not exist and cannot be created.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_BAD_NAME','Your %1s must only contain letters, numbers, or underscores (_\'s) and 20 characters maximum.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_CERTAIN_EMAIL_INVALID','%s is invalid.',now(),'');
+INSERT INTO `language_text` VALUES ('en', '_msgs','AT_CONFIRM_DELETE_SUBSITE_1','Are you sure you want to <strong>Delete</strong> the subsite <strong><em>%s</em></strong>?',now(),'');
+INSERT INTO `language_text` VALUES ('en', '_msgs','AT_CONFIRM_DELETE_SUBSITE_2','Are you <strong>really really</strong> sure you want to <b>Delete</b> the subsite <strong><em>%s</em></strong>? Deleted subsites can not be recovered.',now(),'');

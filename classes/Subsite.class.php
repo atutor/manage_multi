@@ -129,8 +129,12 @@ class Subsite {
 		}
 		
 		// **** create and switch to subsite database ****
+		// ToDo: Backup the global db due to the flaw that $sqlUtility->queryFromFile() excutes the query file on global db instance $db
+		global $db;
+		$backup_db = $db;
+		
 		$subsite_db_name = $this->get_unique_db_name($site_name, DB_HOST_MULTISITE, DB_PORT_MULTISITE, DB_USER_MULTISITE, DB_PASSWORD_MULTISITE);
-		$subsite_db = create_and_switch_db(DB_HOST_MULTISITE, DB_PORT_MULTISITE, DB_USER_MULTISITE, DB_PASSWORD_MULTISITE, TABLE_PREFIX_MULTISITE, $subsite_db_name);
+		$db = create_and_switch_db(DB_HOST_MULTISITE, DB_PORT_MULTISITE, DB_USER_MULTISITE, DB_PASSWORD_MULTISITE, TABLE_PREFIX_MULTISITE, $subsite_db_name, false);
 		if ($msg->containsErrors()) {
 			$this->finalize();
 			return false;
@@ -144,6 +148,10 @@ class Subsite {
 			$this->finalize();
 			return false;
 		}
+		
+		// revert back the global db instance
+		$db = $backup_db;
+		
 		$msg->addFeedback('SUBSITE_TABLES_CREATED');
 		
 		// **** create mysql user/pwd for subsite database ****

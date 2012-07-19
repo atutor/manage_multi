@@ -13,13 +13,27 @@
 
 if (!defined('AT_INCLUDE_PATH') || !defined('AT_MULTISITE_CONFIG_FILE')) { exit; }
 
+$multisite_installed = true;
+
 if (file_exists(AT_MULTISITE_CONFIG_FILE)) {
 	include(AT_MULTISITE_CONFIG_FILE);
-} else if ($msg){
-	require(AT_INCLUDE_PATH.'header.inc.php');
-	$msg->printErrors(array('MULTISITE_CONFIG_FILE_NOT_EXIST', AT_MULTISITE_CONFIG_FILE));
-	require(AT_INCLUDE_PATH.'footer.inc.php');
-	exit;
+	
+	if (!defined('AT_MULTISITE_INSTALL') || !AT_MULTISITE_INSTALL) {
+		$multisite_installed = false;
+	}
+} else {
+	$multisite_installed = false;
+}
+
+if (!$multisite_installed) {
+	if ($msg) {
+		require(AT_INCLUDE_PATH.'header.inc.php');
+		$msg->printErrors(array('MULTISITE_CONFIG_FILE_NOT_EXIST', AT_MULTISITE_CONFIG_FILE));
+		require(AT_INCLUDE_PATH.'footer.inc.php');
+		exit;
+	} else {
+		exit('Cannot find the multisite config file "' . AT_MULTISITE_CONFIG_FILE . '". Run step "Initial Configuration" to create it.');
+	}
 }
 
 if (defined('DB_NAME_MULTISITE')) {

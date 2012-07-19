@@ -17,8 +17,7 @@
  * @param self-explanatory
  * @param true or false. If the file is written successfully, return true, otherwise, return false.
  */
-function write_multisite_config_file($filename, $db_login, $db_pwd, $db_host, $db_port, $db_name, $tb_prefix,
-         $comments, $content_dir, $smtp, $get_file) {
+function write_multisite_config_file($filename, $db_login, $db_pwd, $db_host, $db_port, $db_name, $tb_prefix, $comments) {
 	global $multisite_config_template, $addslashes;
 
 	$tokens = array('{USER}',
@@ -85,6 +84,9 @@ define('DB_NAME_MULTISITE',                    '{DBNAME}');
 /* The prefix to add to table names to avoid conflicts with existing    */
 /* tables. Default: AT_                                                 */
 define('TABLE_PREFIX_MULTISITE',               '{TABLE_PREFIX}');
+
+/* DO NOT ALTER THIS LAST LINE                                          */
+define('AT_MULTISITE_INSTALL', TRUE);
 
 ?".">";
 
