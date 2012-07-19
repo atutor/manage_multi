@@ -9,6 +9,35 @@ include('include/config_multisite_template.php');
 
 if ($_POST['submit']){
 	global $msg;
+	
+	// Check the required fields
+	$missing_fields = array();
+	
+	if (trim($_POST['db_host']) == '') {
+		$missing_fields[] = _AT('db_host');
+	}
+	
+	if (trim($_POST['db_port']) == '') {
+		$missing_fields[] = _AT('db_port');
+	}
+	
+	if (trim($_POST['db_login']) == '') {
+		$missing_fields[] = _AT('db_user');
+	}
+	
+	if (trim($_POST['db_password']) == '') {
+		$missing_fields[] = _AT('db_pwd');
+	}
+	
+	if (trim($_POST['db_name']) == '') {
+		$missing_fields[] = _AT('db_name');
+	}
+	
+	if (count($missing_fields)) {
+		$missing_fields = implode(', ', $missing_fields);
+		$msg->addError(array('EMPTY_FIELDS', $missing_fields));
+	}
+	
 	if (!file_exists(AT_MULTISITE_CONFIG_FILE)) {
 		$msg->addError(array('CONFIG_FILE_NOT_EXIST', AT_MULTISITE_CONFIG_FILE));
 	} else if (!is_writeable(AT_MULTISITE_CONFIG_FILE)) {

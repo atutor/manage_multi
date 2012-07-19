@@ -420,7 +420,7 @@ class Subsite {
 			$msg->addError(array('CERTAIN_EMAIL_INVALID', _AT('instructor_email') . ' ' . $instructor_email));
 		}
 		
-		if ($missing_fields) {
+		if (count($missing_fields) > 0) {
 			$missing_fields = implode(', ', $missing_fields);
 			$msg->addError(array('EMPTY_FIELDS', $missing_fields));
 		}
