@@ -74,7 +74,7 @@ create_dir $subsite_dir/themes 1
 #############
 # Create the sub site's content directory and make it writable
 #
-create_dir $subsite_dir/mods 1
+# create_dir $subsite_dir/mods 1
 
 #############
 # Create the sub site's content directory
