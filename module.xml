@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?> 
 <module version="0.1"> 
     <name lang="en">ATutor MultiSite Manager</name> 
-    <description lang="en">This module is used to create and manage ATutor subsites. A single ATutor code base can be used to run any number of independent ATutor sites as fully independent domains. This module is only applicable for being installed on ATutor main site, not on subsites.</description> 
+    <description lang="en">This module is used to create and manage ATutor subsites. A single ATutor code base can be used to run any number of independent ATutor sites as fully independent domains. This module can only be installed on an ATutor main site of a multisite installation, not on subsites.</description> 
     <maintainers>
         <maintainer> 
             <name>ATutor Team</name> 
