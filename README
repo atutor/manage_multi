@@ -1,6 +1,16 @@
-ATutor multisite readme:
+ATutor multisite README:
 
-1. Ensure your webserver has a virtual host setup to point to the main ATutor codebase. Something like the following with Apache:
+This module is available at:
+https://atutor.ca/atutor/modules/index.php
+
+Installation instruction are found at:
+http://help.atutor.ca/admin/modules.php
+
+After installing the Manage Subsites module, follow the directions below to setup your server to allow subsites. In most cases a root users will need to do this, modifying the Web server's configuration to define a location for the ATutor main site, and define an ServerAlias.
+
+
+
+1. Ensure your webserver has a virtual host setup to point to the main ATutor codebase. Something like the following with Apache. This is typically done by creating a new virtual host file within the Apache sites-available directory, linking the file into the sites-enabled directory, then restarting the Web server
 
 <VirtualHost *:80>
         ServerName  multi.mysite.com
@@ -15,18 +25,15 @@ ATutor multisite readme:
         CustomLog /var/www/sites/logs/multi.mysite.com/acclog.log   Combined
 </VirtualHost>
 
-2. Download "make_multi" module from https://atutor.ca/atutor/modules/index.php. Follow the instruction to install it:
-http://help.atutor.ca/admin/modules.php
 
-3. Once "make_multi" module is installed and enabled, change the ownership or permission of the shell script: [ATutor_root]/make_multi/exec/make_multi.sh
-to ensure it has write permission to the parent directory of [ATutor_root]
+2. Once the Manage Subsites module is installed and enabled, change the ownership or permission of the shell script: [ATutor_root]mods/manage_multi/exec/make_multi.sh
+to ensure it has write permission to the parent directory of [ATutor_root]. This user is typically the same user that owns ATutor itself. If you installed the module using the ATutor Module Manager from the public module repository, the systems's root user will need to make this permission change. If you uploaded the module manually and unpacked it on the server, then it is probably already owned by the same users that owns ATutor.
 
-4. Go to admin "Manage Subsites" page -> "Initial Configuration", follow the instruction on the page to config the database and mysql account that is used
-to create and manage subsites.
+3. Go to the main site administrator's "Manage Subsites" page, then choose "Initial Configuration" and follow the instructions on the page to configure the database and mysql account that is used to create and manage subsites.
 
-5. To create subsites, use "Manage Subsites" page -> "Create Subsite" page
+4. To create subsites, use "Manage Subsites" page -> "Create Subsite" page
 
-6. To manage subsites, use "Manage Subsites" page -> "Manage Subsite" page
+5. To manage subsites, use "Manage Subsites" page -> "Manage Subsite" page
 
 For additional installation details see:
 http://www.atutor.ca/atutor/docs/installation.php
@@ -34,16 +41,6 @@ http://www.atutor.ca/atutor/docs/installation.php
 Or, the official ATutor Handbook:
 http://help.atutor.ca
 
-Installing from a GitHub Clone
-1. If you are installing ATutor from a GitHub clone, rather than an ATutor bundled distribution, follow the usual installation and upgrade instructions at the link above.
-2. Before running the Installer, you will need to create an empty config file. To create the file, from the ATutor base directory, issue the command 
-touch include/config.inc.php
-3. Then follow the instruction given by the Installer.
-
-GitHub Basics
-If you wish to have code you've developed added to the ATutor public source code, you will need to understand a few Git basics.
-
-See: http://wiki.atutor.ca/display/atutorwiki/Using+Git+and+GitHub
 
 Enjoy!
 

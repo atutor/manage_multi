@@ -27,7 +27,7 @@ $msg->printAll();
 ?>
 
 <div class="input-form">
-<h2>Create/Edit Subsite Database</h2>
+<h2><?php echo _AT('createedit_subsite'); ?></h2>
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" name="make_multi" method="post">
 	<div class="row">
 		<p><?php echo _AT('create_subsite_notes', realpath($subsite->make_multi_script), $subsite->subsite_main_dir); ?></p>
@@ -51,20 +51,22 @@ $msg->printAll();
 	<div class="row">
 		<span class="required" title="<?php echo _AT('required_field'); ?>">*</span>
 		<label for="site_admin_email"><?php echo _AT('site_admin_email'); ?></label><br />
+		<p><?php echo _AT('site_admin_details');?></p>
 		<input type="text" name="site_admin_email" id="site_admin_email" value="<?php echo htmlspecialchars($_POST['site_admin_email']);?>" /><br />
 	</div>
 	
 	<div class="row">
 		<span class="required" title="<?php echo _AT('required_field'); ?>">*</span>
 		<label for="just_social"><?php echo _AT('just_social'); ?></label><br />
-		<label for="social_y">Just Social</label><input type="radio" name="just_social" id="social_y" value="1" class="formfield" <?php echo ($_POST['just_social']==1)?' checked="checked"':''; ?>/>
-		<label for="social_n">Social and LMS</label><input type="radio" name="just_social" id="social_n" value="0" class="formfield" <?php echo ($_POST['just_social']==0 || !isset($_POST['just_social']))?' checked="checked"':''; ?>/><br />
+		<label for="social_y"><?php echo _AT('just_social'); ?></label><input type="radio" name="just_social" id="social_y" value="1" class="formfield" <?php echo ($_POST['just_social']==1)?' checked="checked"':''; ?>/>
+		<label for="social_n"><?php echo _AT('social_and_lms'); ?></label><input type="radio" name="just_social" id="social_n" value="0" class="formfield" <?php echo ($_POST['just_social']==0 || !isset($_POST['just_social']))?' checked="checked"':''; ?>/><br />
 		<small>&middot; <?php echo _AT('just_social_notes'); ?></small>
 	</div>
 	
 	<div class="row">
 		<label for="enabled"><?php echo _AT('enable');?></label>
 		<input type="checkbox" name="enabled"  id="enabled" value="1"<?php if ($_POST['enabled']) echo ' checked="checked"'; ?> /><br />
+		<p><?php echo _AT('enable_details'); ?><p>
 	</div>
 	</fieldset>
 	
@@ -98,7 +100,7 @@ $msg->printAll();
 	</div>
 	</fieldset>
 
-	<input type="submit" name="submit" value="Create Site"/>
+	<input type="submit" name="submit" value="<?php echo _AT('create_subsite'); ?>" class="button"/>
 </form>
 </div>
 

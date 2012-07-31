@@ -134,7 +134,7 @@ $msg->printAll();
 		<small><?php echo _AT(tb_prefix_notes);?></small>
 	</div>
 
-	<input type="submit" name="submit" />
+	<input type="submit" name="submit" value="<?php echo _AT('subsite_config_save'); ?>" class="button" />
 </form>
 </div>
 

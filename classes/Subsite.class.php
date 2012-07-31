@@ -133,7 +133,7 @@ class Subsite {
 		global $db;
 		$backup_db = $db;
 		
-		$subsite_db_name = $this->get_unique_db_name($site_name, DB_HOST_MULTISITE, DB_PORT_MULTISITE, DB_USER_MULTISITE, DB_PASSWORD_MULTISITE);
+		$subsite_db_name = $this->get_unique_db_name($this->site_url, DB_HOST_MULTISITE, DB_PORT_MULTISITE, DB_USER_MULTISITE, DB_PASSWORD_MULTISITE);
 		$db = create_and_switch_db(DB_HOST_MULTISITE, DB_PORT_MULTISITE, DB_USER_MULTISITE, DB_PASSWORD_MULTISITE, TABLE_PREFIX_MULTISITE, $subsite_db_name, false);
 		if ($msg->containsErrors()) {
 			$this->finalize();
@@ -156,7 +156,7 @@ class Subsite {
 		
 		// **** create mysql user/pwd for subsite database ****
 		// the super mysql id for creating mysql user is stored in include/config_multisite.inc.php
-		$mysql_account = $this->get_unique_mysql_account($subsite_db_name);
+		$mysql_account = $this->get_unique_mysql_account($site_name);
 		$mysql_pwd = $this->create_mysql_user(DB_HOST_MULTISITE, $mysql_account, $subsite_db_name, DB_USER_MULTISITE);
 		
 		if (!$mysql_pwd) {
@@ -210,12 +210,12 @@ class Subsite {
 		$msg->addFeedback('MANAGE_TABLE_UPDATED');
 		
 		// **** send email to admin with admin and instructor login information
+		$full_site_url = AT_SERVER_PROTOCOL . $this->site_url;
 		$this->send_email($this->main_site_contact_email, $admin_email, $full_site_url, $this->default_admin_user_name, $admin_pwd, $instructor_username, $instructor_pwd);
 		
 		$this->enabled = $enabled;
 		
-		$full_site_url = AT_SERVER_PROTOCOL . $this->site_url;
-		$msg->addFeedback(array('CREATE_SUBSITE_SUCCESSFUL', $full_site_url, $full_site_url, $this->default_admin_user_name, $admin_pwd, $instructor_username, $instructor_pwd));
+		$msg->addFeedback(array('CREATE_SUBSITE_SUCCESSFUL', $full_site_url, $this->default_admin_user_name, $admin_pwd, $instructor_username, $instructor_pwd));
 		
 		$this->finalize();
 		return true;
@@ -658,6 +658,7 @@ class Subsite {
 	private function get_unique_db_name($db_prefix, $db_host, $db_port, $db_login, $db_pwd) {
 		global $db_multisite;
 		
+		$db_prefix = str_replace(".","_", $db_prefix);
 		if (!mysql_select_db($db_prefix, $db_multisite)) {
 			return $db_prefix;
 		} else {
@@ -683,7 +684,7 @@ class Subsite {
 		$mail->From     = $from_email;
 		$mail->AddAddress($to_email);
 		$mail->Subject = SITE_NAME . ': ' . _AT('email_confirmation_subject');
-		$mail->Body    = _AT('email_confirmation_subsite_msg', $full_subsite_url, $full_subsite_url, $admin_username, $admin_pwd, $instructor_username, $instructor_pwd)."\n\n";
+		$mail->Body    = _AT('email_confirmation_subsite_msg', $full_subsite_url, $admin_username, $admin_pwd, $instructor_username, $instructor_pwd)."\n\n";
 		$mail->Send();
 
 		$msg->addFeedback('CONFIRMATION_SENT');
