@@ -101,7 +101,6 @@ class Subsite {
 		     $instructor_username, $instructor_fname, $instructor_lname, $instructor_email)) {
 			return false;
 		}
-
 		$this->site_url = $addslashes($this->get_site_url($site_name));
 		
 		$this->prepare_creation();
@@ -518,8 +517,8 @@ class Subsite {
 			return false;
 		}
 		
-		$sql = "GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP ON " . $subsite_db_name . 
-		       ".* TO '" . $mysql_account . "'@'" . $db_host . "'";
+		$sql = "GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP ON `" . $subsite_db_name . 
+		       "`.* TO '" . $mysql_account . "'@'" . $db_host . "'";
 		if (!mysql_query($sql, $db_multisite)) {
 			$msg->addError(array('GRANT_PRIV_FAILED', $super_mysql_acccount));
 			return false;
