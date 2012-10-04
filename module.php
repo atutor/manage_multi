@@ -15,6 +15,7 @@ if (!isset($this) || (isset($this) && (strtolower(get_class($this)) != 'module')
 define('AT_PRIV_MANAGE_MULTI',       $this->getPrivilege());
 define('AT_ADMIN_PRIV_MANAGE_MULTI', $this->getAdminPrivilege());
 
+$this->_pages['mods/manage_multi//index.php']['icon']      = 'mods/manage_multi/multisite_icon.png';
 
 if (admin_authenticate(AT_ADMIN_PRIV_MANAGE_MULTI, TRUE) || admin_authenticate(AT_ADMIN_PRIV_ADMIN, TRUE)) {
 	$this->_pages[AT_NAV_ADMIN] = array('mods/manage_multi/index_admin.php');
