@@ -29,11 +29,13 @@ After installing the Manage Subsites module, follow the directions below to setu
 2. Once the Manage Subsites module is installed and enabled, change the ownership or permission of the shell script: [ATutor_root]mods/manage_multi/exec/make_multi.sh
 to ensure it has write permission to the parent directory of [ATutor_root]. This user is typically the same user that owns ATutor itself. If you installed the module using the ATutor Module Manager from the public module repository, the systems's root user will need to make this permission change. If you uploaded the module manually and unpacked it on the server, then it is probably already owned by the same users that owns ATutor.
 
-3. Go to the main site administrator's "Manage Subsites" page, then choose "Initial Configuration" and follow the instructions on the page to configure the database and mysql account that is used to create and manage subsites.
+3. To accommodate custom themes for subsites, create a symbolic link from the root sites/ directory in which all subsites and the main site are located, to a directory within the main ATutor site. From within the main site's directory, use something like 'ln -s /var/www/sites sites'
 
-4. To create subsites, use "Manage Subsites" page -> "Create Subsite" page
+4. Go to the main site administrator's "Manage Subsites" page, then choose "Initial Configuration" and follow the instructions on the page to configure the database and mysql account that is used to create and manage subsites.
 
-5. To manage subsites, use "Manage Subsites" page -> "Manage Subsite" page
+5. To create subsites, use "Manage Subsites" page -> "Create Subsite" page
+
+6. To manage subsites, use "Manage Subsites" page -> "Manage Subsite" page
 
 For additional installation details see:
 http://www.atutor.ca/atutor/docs/installation.php
