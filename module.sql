@@ -81,6 +81,16 @@ INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_CONFIG_FILE_WRITT
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_MANAGE_TABLE_UPDATED','The subsite mangement table has been updated.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_DIR_CANNOT_CREATE','%s directory does not exist and cannot be created.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_BAD_NAME','Your %1s must only contain letters, numbers, or underscores (_\'s) and 20 characters maximum.',now(),'');
+INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_MAINSITE_DIR_NOT_FOUND','Failed at locating the main site directory.',now(),'');
+INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_NO_DB_PRIVILEGE','"%1s@%2s" does not have enough database privilege to perform upgrade on subsite "%3s".',now(),'');
+INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_LANG_TEXT_SQL_NOT_FOUND','Cannot find the language text SQL file "%s".',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_CERTAIN_EMAIL_INVALID','%s is invalid.',now(),'');
+INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_SUBSITE_UPGRADED','The subsite <span style="font-weight:bold">%s</span> has been upgraded successfully.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_CONFIRM_DELETE_SUBSITE_1','Are you sure you want to <strong>Delete</strong> the subsite <strong><em>%s</em></strong>?',now(),'');
+INSERT INTO `language_text` VALUES ('en', '_msgs','AT_CONFIRM_UPGRADE_SUBSITE','Are you sure you want to <strong>Upgrade</strong> these subsites: <br /><br /> <strong><em>%s</em></strong>?',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_CONFIRM_DELETE_SUBSITE_2','Are you <strong>really really</strong> sure you want to <b>Delete</b> the subsite <strong><em>%s</em></strong>? Deleted subsites can not be recovered.',now(),'');
+INSERT INTO `language_text` VALUES ('en', '_module','upgrade_subsite','Upgrade Subsite',NOW(),'');
+INSERT INTO `language_text` VALUES ('en', '_module','upgrade','Upgrade',NOW(),'');
+INSERT INTO `language_text` VALUES ('en', '_module','list_of_subsites','List of ATutor subsites',NOW(),'');
+INSERT INTO `language_text` VALUES ('en', '_module','has_latest_version','Has latest version %s',NOW(),'');
+INSERT INTO `language_text` VALUES ('en', '_module','need_upgrade','<span style="font-weight:bold">Need an upgrade from %1s to %2s</span>',NOW(),'');

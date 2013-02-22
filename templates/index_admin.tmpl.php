@@ -1,6 +1,6 @@
 
 <form name="form" method="post" action="<?php echo $_SERVER['PHP_SELF']; ?>">
-<table summary="List of ATutor subsitess" class="data" rules="cols" align="left" style="width: 95%;">
+<table summary="<?php echo _AT("list_of_subsites"); ?>" class="data" rules="cols" align="left" style="width: 95%;">
 <thead>
 <tr>
 	<th scope="col">&nbsp;</th>

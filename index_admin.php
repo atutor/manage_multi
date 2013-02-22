@@ -32,6 +32,6 @@ $_custom_head = '    <script src="'.$_base_path.'mods/manage_multi/js/manage_mul
 require (AT_INCLUDE_PATH.'header.inc.php');
 $msg->printAll();
 
-include('index_admin.tmpl.php');
+include('templates/index_admin.tmpl.php');
 
 require (AT_INCLUDE_PATH.'footer.inc.php'); ?>

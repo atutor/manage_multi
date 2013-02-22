@@ -24,9 +24,12 @@ if (!defined('AT_INCLUDE_PATH')) { exit; }
 
 require(AT_INCLUDE_PATH . 'classes/sqlutility.class.php');
 require(AT_INCLUDE_PATH . 'install/install.inc.php');
+require(AT_INCLUDE_PATH . 'install/upgrade.inc.php');
 require(AT_INCLUDE_PATH . 'install/config_template.php');
 require(AT_INCLUDE_PATH . '../mods/_core/file_manager/filemanager.inc.php');
 require(AT_INCLUDE_PATH . '../mods/manage_multi/lib/mysql_multisite_connect.inc.php');
+
+define('MM_MULTISITE_START_VERSION', '2.1');
 
 class Subsite {
 
@@ -267,6 +270,54 @@ class Subsite {
 	}
 	
 	/**
+	 * Upgrade a subsite
+	 */
+	public function upgrade() {
+		global $msg, $db;
+		
+		// find the main site directory
+		$main_site_dir = $this->get_main_site_dir();
+		$upgrade_sql_dir = $main_site_dir . 'include/install/db/';
+		
+		// check the existence of the upgrade SQL files
+		if (!file_exists($main_site_dir . 'include/install/db/atutor_schema.sql')) {
+			$msg->addError('MAINSITE_DIR_NOT_FOUND');
+			return false;
+		}
+		
+		// Backup the database credentials and connection for the main site
+		$db_main_site = $db;
+		
+		$subsite_configs = $this->get_subsite_configs();
+		
+		$db = mysql_connect($subsite_configs['DB_HOST'] . ':' . $subsite_configs['DB_PORT'], $subsite_configs['DB_USER'], $subsite_configs['DB_PASSWORD']);
+		mysql_select_db($subsite_configs['DB_NAME'], $db);
+		
+		if (!$this->has_proper_db_privilege($subsite_configs['DB_USER'], $subsite_configs['DB_HOST'])) {
+			$msg->addError(array('NO_DB_PRIVILEGE', $subsite_configs['DB_USER'], $subsite_configs['DB_HOST'], $this->site_url));
+			return false;
+		}
+		
+		// get current version
+		$rows = queryDB("SELECT * FROM %sconfig WHERE name='%s'", array($subsite_configs['TABLE_PREFIX'], 'version'), TRUE);
+		$current_version = (count($rows) > 0) ? $rows['value'] : MM_MULTISITE_START_VERSION;
+		
+		run_upgrade_sql($upgrade_sql_dir, $current_version, $subsite_configs['TABLE_PREFIX'], false);
+		
+		if ($this->update_language_text($upgrade_sql_dir . 'atutor_language_text.sql', $subsite_configs['TABLE_PREFIX']) === FALSE) {
+			return false;
+		}
+		
+		// update the new version number into "config" table
+		queryDB("REPLACE INTO %sconfig (name, value) VALUES ('version', '%s')", array($subsite_configs['TABLE_PREFIX'], VERSION));
+		
+		$db = $db_main_site;
+		$this->finalize();
+		
+		return true;
+	}
+	
+	/**
 	 * Enable a subsite
 	 */
 	public function enable() {
@@ -310,6 +361,35 @@ class Subsite {
 	}
 	
 	/**
+	 * Return the ATutor version for the current subsite
+	 * Use to determine if an upgrade is needed
+	 */
+	public function get_atutor_version() {
+		global $db;
+		
+		$db_main_site = $db;
+		
+		$subsite_configs = $this->get_subsite_configs();
+		
+		$db = mysql_connect($subsite_configs['DB_HOST'] . ':' . $subsite_configs['DB_PORT'], $subsite_configs['DB_USER'], $subsite_configs['DB_PASSWORD']);
+		mysql_select_db($subsite_configs['DB_NAME'], $db);
+		
+		$rows = queryDB("SELECT * FROM %sconfig WHERE name='%s'", array($subsite_configs['TABLE_PREFIX'], 'version'), TRUE);
+		
+		$db = $db_main_site;
+		$this->finalize();
+		
+		return count($rows) > 0 ? $rows['value'] : MM_MULTISITE_START_VERSION;
+	}
+	
+	/**
+	 * Return the real path to the main site directory
+	 */
+	private function get_main_site_dir() {
+		return realpath($_SERVER['DOCUMENT_ROOT']) . '/';
+	}
+	
+	/**
 	 * Check if the url is the valid
 	 */
 	private function get_valid_url($url) {
@@ -324,6 +404,58 @@ class Subsite {
 		$sql = "SELECT * FROM " . TABLE_PREFIX_MULTISITE . "subsites where site_url = '" . $addslashes($site_url) . "'";
 		$result = mysql_query($sql, $db_multisite);
 		return mysql_fetch_assoc($result);
+	}
+	
+	/**
+	 * Find out if the given database account has "alter table" privilege. Return true if has, otherwise, false.
+	 */
+	private function has_proper_db_privilege($user, $host) {
+		// check if the mysql user has "alter table" privilege
+		$rows = queryDB("SHOW GRANTS FOR '%s'@'%s'", array($user, $host));
+		$has_proper_privilege = false;
+		
+		foreach ($rows as $row) {
+			foreach ($row as $privilege) {
+				if (strpos($privilege, 'GRANT ALL') !== false || strpos($privilege, 'ALTER') !== false) {
+					$has_proper_privilege = true;
+					break 2;
+				}
+			}
+		}
+		return $has_proper_privilege;
+	}
+	
+	/*
+	 * Parse language_text.sql file to replace all the english languages
+	 */
+	private function update_language_text($language_text_location, $table_prefix='') {
+		global $msg;
+		
+		if (!file_exists($language_text_location)) {
+			$msg->addError(array('LANG_TEXT_SQL_NOT_FOUND', $language_text_location));
+			return false;
+		}
+
+		$sql_query = trim(fread(fopen($language_text_location, 'r'), filesize($language_text_location)));
+		SqlUtility::splitSqlFile($pieces, $sql_query);
+		
+		foreach ($pieces as $piece)
+		{
+			$piece = trim($piece);
+			
+			$prefixed_query = ($table_prefix != '') ? SqlUtility::prefixQuery($piece, $table_prefix) : $piece;
+			
+			if($prefixed_query === false || ($prefixed_query[1] != 'INSERT INTO' && $prefixed_query[1] != 'REPLACE INTO')) {
+				continue;
+			} else if ($prefixed_query[1] == 'INSERT INTO') {
+				$prefixed_query[0] = 'REPLACE INTO' . substr($prefixed_query[0], 11);
+			}
+			
+			$sql = str_replace('%', '%%', $prefixed_query[0]);
+			queryDB($sql);
+		}
+		
+		return true;
 	}
 	
 	/**
@@ -353,11 +485,22 @@ class Subsite {
 	}
 	
 	/**
+	 * Return an array of the subsite configs that are parsed from subsite config file.
+	 */
+	private function get_subsite_configs() {
+		$subsite_dir = $this->subsite_main_dir . $this->site_url . '/';
+		$subsite_config_file = $subsite_dir . 'include/config.inc.php';
+		
+		return $this->parse_config_file($subsite_config_file);
+	}
+	
+	/**
 	 * Parse config file
 	 * @param config file: the location of the config file
 	 * @return an array of the database-related config information. Return false if an error occurred.
 	 */
 	private function parse_config_file($config_file) {
+		global $msg;
 		if (!file_exists($config_file)) {
 			$msg->addError(array('CONFIG_FILE_NOT_EXIST', $config_file));
 			return false;
@@ -517,7 +660,7 @@ class Subsite {
 			return false;
 		}
 		
-		$sql = "GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP ON `" . $subsite_db_name . 
+		$sql = "GRANT ALL ON `" . $subsite_db_name . 
 		       "`.* TO '" . $mysql_account . "'@'" . $db_host . "'";
 		if (!mysql_query($sql, $db_multisite)) {
 			$msg->addError(array('GRANT_PRIV_FAILED', $super_mysql_acccount));

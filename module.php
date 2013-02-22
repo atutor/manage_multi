@@ -25,13 +25,19 @@ if (admin_authenticate(AT_ADMIN_PRIV_MANAGE_MULTI, TRUE) || admin_authenticate(A
 	$this->_pages['mods/manage_multi/create_subsite.php']['title_var'] = 'create_subsite';
 	$this->_pages['mods/manage_multi/create_subsite.php']['parent']    = 'mods/manage_multi/index_admin.php';
 	
+	$this->_pages['mods/manage_multi/upgrade_subsite.php']['title_var'] = 'upgrade_subsite';
+	$this->_pages['mods/manage_multi/upgrade_subsite.php']['parent']    = 'mods/manage_multi/index_admin.php';
+	
+	$this->_pages['mods/manage_multi/upgrade_confirm.php']['title_var'] = 'upgrade';
+	$this->_pages['mods/manage_multi/upgrade_subsite.php']['parent']    = 'mods/manage_multi/index_admin.php';
+	
 	$this->_pages['mods/manage_multi/delete_subsite.php']['title_var'] = 'delete_subsite';
 	$this->_pages['mods/manage_multi/delete_subsite.php']['parent']    = 'mods/manage_multi/index_admin.php';
 	
 	$this->_pages['mods/manage_multi/config_multi.php']['title_var'] = 'config_multi';
 	$this->_pages['mods/manage_multi/config_multi.php']['parent']    = 'mods/manage_multi/index_admin.php';
 	
-	$this->_pages['mods/manage_multi/index_admin.php']['children']    = array('mods/manage_multi/config_multi.php', 'mods/manage_multi/create_subsite.php');
+	$this->_pages['mods/manage_multi/index_admin.php']['children']    = array('mods/manage_multi/config_multi.php', 'mods/manage_multi/create_subsite.php', 'mods/manage_multi/upgrade_subsite.php');
 	
 	define('MM_COMMON_DOMAIN', implode('.', array_splice(explode('.', $_SERVER['HTTP_HOST']), 1)));
 }
