@@ -9,7 +9,7 @@ INSERT INTO `language_text` VALUES ('en', '_module','subsite_config_save','Save 
 INSERT INTO `language_text` VALUES ('en', '_module','createedit_subsite','Create Subsite',NOW(),'');
 INSERT INTO `language_text` VALUES ('en', '_module','site_admin_details','Subsite details, including login information, will be sent to this email when the subsite is created',NOW(),'');
 INSERT INTO `language_text` VALUES ('en', '_module','enable_details','Choosing Enable will make the subsite immediately available. A subsite can be disabled at a later time if needed, on the Manage Subsites screen.',NOW(),'');
-INSERT INTO `language_text` VALUES ('en', '_module','create_subsite_notes','Note: Before creating a subsite, change the ownship of the shell script <span style="font-weight:bold;">%1s</span> to make sure it has write permission to directory <span style="font-weight:bold;">%2s</span>.',NOW(),'');
+INSERT INTO `language_text` VALUES ('en', '_module','create_subsite_notes','Note: Before creating a subsite, change the ownership of the shell script <span style="font-weight:bold;">%1s</span> to make sure it has write permission to directory <span style="font-weight:bold;">%2s</span>.',NOW(),'');
 INSERT INTO `language_text` VALUES ('en', '_module','site_name_contain_only','May contain only letters, numbers, underscores or hyphens.',now(),'create subsites');
 INSERT INTO `language_text` VALUES ('en', '_module','site_admin_email','Site Admin Email', now() ,'create subsites');
 INSERT INTO `language_text` VALUES ('en', '_module','just_social','Just Social', now() ,'create subsites');
