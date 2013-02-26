@@ -27,7 +27,7 @@ require(AT_INCLUDE_PATH . 'install/install.inc.php');
 require(AT_INCLUDE_PATH . 'install/upgrade.inc.php');
 require(AT_INCLUDE_PATH . 'install/config_template.php');
 require(AT_INCLUDE_PATH . '../mods/_core/file_manager/filemanager.inc.php');
-require(AT_INCLUDE_PATH . '../mods/manage_multi/lib/mysql_multisite_connect.inc.php');
+require_once(AT_INCLUDE_PATH . '../mods/manage_multi/lib/mysql_multisite_connect.inc.php');
 
 define('MM_MULTISITE_START_VERSION', '2.1');
 
@@ -182,7 +182,8 @@ class Subsite {
 
 		// **** Write subsite include/config.inc.php ****
 		$filename = $this->subsite_main_dir . $this->site_url . '/include/config.inc.php';
-		
+		$created_date = date("Y-m-d H:i:s");
+	
 		if (!file_exists($filename) || !is_writeable($filename)) {
 			$msg->addError(array('FILE_NOT_WRITABLE', $filename));
 			$this->finalize();
@@ -205,7 +206,7 @@ class Subsite {
 		$this->switch_subsite_manage_db();
 		
 		// **** update database ****
-		if (!$this->update_table($this->site_url, $enabled)) {
+		if (!$this->update_table($this->site_url, VERSION, $created_date, '', $enabled)) {
 			$this->finalize();
 			return false;
 		}
@@ -301,10 +302,16 @@ class Subsite {
 		// get current version
 		$rows = queryDB("SELECT * FROM %sconfig WHERE name='%s'", array($subsite_configs['TABLE_PREFIX'], 'version'), TRUE);
 		$current_version = (count($rows) > 0) ? $rows['value'] : MM_MULTISITE_START_VERSION;
+		$current_date = date("Y-m-d H:i:s");
 		
 		run_upgrade_sql($upgrade_sql_dir, $current_version, $subsite_configs['TABLE_PREFIX'], false);
 		
 		if ($this->update_language_text($upgrade_sql_dir . 'atutor_language_text.sql', $subsite_configs['TABLE_PREFIX']) === FALSE) {
+			return false;
+		}
+
+		if (!$this->update_subsite_info($this->site_url, VERSION,  $current_date)) {
+			$this->finalize();
 			return false;
 		}
 		
@@ -659,9 +666,13 @@ class Subsite {
 			$msg->addError(array('CREATE_MYSQL_ACCT_FAILED', $mysql_account, mysql_error($db_multisite), $super_mysql_acccount));
 			return false;
 		}
-		
-		$sql = "GRANT ALL ON `" . $subsite_db_name . 
+		debug($subsite_db_name);
+		//$privileges = "SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER";
+		$privileges = "ALL PRIVILEGES";
+		$sql = "GRANT ".$privileges." ON `" . $subsite_db_name . 
 		       "`.* TO '" . $mysql_account . "'@'" . $db_host . "'";
+		       
+		debug($sql);
 		if (!mysql_query($sql, $db_multisite)) {
 			$msg->addError(array('GRANT_PRIV_FAILED', $super_mysql_acccount));
 			return false;
@@ -707,12 +718,32 @@ class Subsite {
 	 * @param @enabled
 	 * @return true/false
 	 */
-	private function update_table($site_url, $enabled) {
+	private function update_table($site_url, $version, $created_date, $updated_date, $enabled) {
 		global $db_multisite, $msg;
 		
 		// insert the new site into db
-		$sql = "INSERT INTO " . TABLE_PREFIX_MULTISITE . "subsites(site_url, enabled) VALUES('" .$site_url ."', '" . $enabled ."')";
+		$sql = "INSERT INTO " . TABLE_PREFIX_MULTISITE . "subsites(site_url, version, created_date, updated_date, enabled) VALUES('" .$site_url ."','" .$version ."','".$created_date."', '".$updated_date."', '" . $enabled ."')";
 		
+		if(mysql_query($sql, $db_multisite)){
+			return true;
+		} else{
+			$msg->addError(array('UPDATE_DB_FAILED', mysql_error()));
+			return false;
+		}
+	}
+	
+	/**
+	 * Update table "subsites"
+	 * @param site_url
+	 * @param version
+	 * @param updated_date
+	 * @return true/false
+	 */
+	private function update_subsite_info($site_url, $version,  $updated_date) {
+		global $db_multisite, $msg;
+		
+		// insert the new site into db
+		$sql = "UPDATE " . TABLE_PREFIX_MULTISITE . "subsites SET updated_date = '$updated_date', version = '$version' WHERE site_url = '$site_url'";
 		if(mysql_query($sql, $db_multisite)){
 			return true;
 		} else{

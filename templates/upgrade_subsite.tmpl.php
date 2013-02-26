@@ -5,12 +5,13 @@
 <tr>
     <th scope="col"><input type="checkbox" id="AT_upgrade_all" /></th>
     <th scope="col"><?php echo _AT('site_url'); ?></th>
+    <th scope="col"><?php echo _AT('updated_date'); ?></th>
     <th scope="col"><?php echo _AT('status'); ?></th>
 </tr>
 </thead>
 <tfoot>
 <tr>
-    <td colspan="3">
+    <td colspan="4">
         <input type="submit" name="upgrade" value="<?php echo _AT('upgrade'); ?>" />
     </td>
 </tr>
@@ -25,6 +26,11 @@
             <tr class="AT_subsites_row">
                  <td class="fl-tabs-center"><input type="checkbox" name="site_url[]" value="<?php echo $row['site_url']; ?>" id="<?php echo $row['site_url']; ?>" <?php if ($row['version'] == VERSION) {echo 'disabled="disabled" '; } ?>/></td>
                 <td><?php echo $row['site_url']; ?></td>
+                <?php if(isset($row['update_date']) && $row['update_date'] != ''){ ?>
+                    <td><?php echo $row['update_date']; ?></td>
+                <?php }else{ ?>
+                    <td><?php echo _AT('na'); ?></td>
+                <?php } ?>
                 <td><?php
                     if($row['version'] == VERSION){
                         echo _AT(array('has_latest_version', VERSION));

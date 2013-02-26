@@ -2,7 +2,7 @@
 define('AT_INCLUDE_PATH', '../../include/');
 require (AT_INCLUDE_PATH.'vitals.inc.php');
 admin_authenticate(AT_ADMIN_PRIV_MANAGE_MULTI);
-require('lib/mysql_multisite_connect.inc.php');
+require_once('lib/mysql_multisite_connect.inc.php');
 require('classes/Subsite.class.php');
 
 if(isset($_POST['upgrade'], $_POST['site_url']) && is_array($_POST['site_url'])){
@@ -13,7 +13,15 @@ if(isset($_POST['upgrade'], $_POST['site_url']) && is_array($_POST['site_url']))
 // Display a table listing all subsites.
 mysql_select_db(DB_NAME_MULTISITE, $db_multisite);
 
-$original_rows = queryDB("SELECT * from " . TABLE_PREFIX_MULTISITE . "subsites");
+//$original_rows = queryDB("SELECT * from " . TABLE_PREFIX_MULTISITE . "subsites");
+
+$sql = "SELECT * from " . TABLE_PREFIX_MULTISITE . "subsites";
+$result = mysql_query($sql,$db_multisite);
+
+$original_rows = array();
+while($original_row = mysql_fetch_assoc($result)){
+    array_push($original_rows, $original_row);
+}
 
 $rows = array();
 foreach ($original_rows as $original_row) {

@@ -5,6 +5,7 @@ INSERT INTO `language_text` VALUES ('en', '_module','config_multi','Initial Conf
 INSERT INTO `language_text` VALUES ('en', '_module','create_subsite','Create Subsite',NOW(),'');
 INSERT INTO `language_text` VALUES ('en', '_module','delete_subsite','Delete Subsite',NOW(),'');
 INSERT INTO `language_text` VALUES ('en', '_module','subsite_url','Subsite URL',NOW(),'');
+INSERT INTO `language_text` VALUES ('en', '_module','updated_date','Last Updated',NOW(),'');
 INSERT INTO `language_text` VALUES ('en', '_module','subsite_config_save','Save Configuration',NOW(),'');
 INSERT INTO `language_text` VALUES ('en', '_module','createedit_subsite','Create Subsite',NOW(),'');
 INSERT INTO `language_text` VALUES ('en', '_module','site_admin_details','Subsite details, including login information, will be sent to this email when the subsite is created',NOW(),'');
