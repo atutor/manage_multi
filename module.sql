@@ -79,7 +79,7 @@ INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_CREATE_SUBSITE_SU
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_SUBSITE_TABLES_CREATED','The tables have been created successfully.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_MYSQL_ACCT_CREATED','Mysql account "%s" has been created successfully.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_CONFIG_FILE_WRITTEN','The config file "%s" has been written.',now(),'');
-INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_MANAGE_TABLE_UPDATED','The subsite mangement table has been updated.',now(),'');
+INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_MANAGE_TABLE_UPDATED','The subsite management table has been updated.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_DIR_CANNOT_CREATE','%s directory does not exist and cannot be created.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_BAD_NAME','Your %1s must only contain letters, numbers, or underscores (_\'s) and 20 characters maximum.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_MAINSITE_DIR_NOT_FOUND','Failed at locating the main site directory.',now(),'');
