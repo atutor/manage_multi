@@ -27,7 +27,7 @@ require(AT_INCLUDE_PATH . 'install/install.inc.php');
 require(AT_INCLUDE_PATH . 'install/upgrade.inc.php');
 require(AT_INCLUDE_PATH . 'install/config_template.php');
 require(AT_INCLUDE_PATH . '../mods/_core/file_manager/filemanager.inc.php');
-require_once(AT_INCLUDE_PATH . '../mods/manage_multi/lib/mysql_multisite_connect.inc.php');
+require(AT_INCLUDE_PATH . '../mods/manage_multi/lib/mysql_multisite_connect.inc.php');
 
 define('MM_MULTISITE_START_VERSION', '2.1');
 
@@ -274,8 +274,7 @@ class Subsite {
 	 * Upgrade a subsite
 	 */
 	public function upgrade() {
-		global $msg, $db;
-		
+		global $msg, $db, $db_multisite;
 		// find the main site directory
 		$main_site_dir = $this->get_main_site_dir();
 		$upgrade_sql_dir = $main_site_dir . 'include/install/db/';
@@ -291,13 +290,31 @@ class Subsite {
 		
 		$subsite_configs = $this->get_subsite_configs();
 		
+		// Give more privilege to users created with v2.1
+		if (!$this->has_proper_db_privilege($subsite_configs['DB_USER'], $subsite_configs['DB_HOST'])) {		
+
+            //$privileges = "SELECT , INSERT , UPDATE , DELETE , CREATE , ALTER ";
+            $privileges = "ALL PRIVILEGES";
+            $sql = "GRANT ".$privileges." ON `" . $subsite_configs['DB_NAME'] . 
+                   "`.* TO '" . $subsite_configs['DB_USER'] . "'@'" . $subsite_configs['DB_HOST']. "'";
+                   
+            if (!mysql_query($sql, $db_multisite)) {
+                $msg->addError(array('GRANT_PRIV_FAILED', $super_mysql_acccount));
+                return false;
+            } 
+            
+            $sql = "FLUSH PRIVILEGES;";
+
+            if(!mysql_query($sql, $db_multisite)){
+                $msg->addError(array('FLUSH_PRIV_FAILED', $super_mysql_acccount));
+            }else{
+		
+		        $msg->addFeedback(array('UPDATE_PRIV_SUCCESS'));
+		    }
+		} 
+		
 		$db = mysql_connect($subsite_configs['DB_HOST'] . ':' . $subsite_configs['DB_PORT'], $subsite_configs['DB_USER'], $subsite_configs['DB_PASSWORD']);
 		mysql_select_db($subsite_configs['DB_NAME'], $db);
-		
-		if (!$this->has_proper_db_privilege($subsite_configs['DB_USER'], $subsite_configs['DB_HOST'])) {
-			$msg->addError(array('NO_DB_PRIVILEGE', $subsite_configs['DB_USER'], $subsite_configs['DB_HOST'], $this->site_url));
-			return false;
-		}
 		
 		// get current version
 		$rows = queryDB("SELECT * FROM %sconfig WHERE name='%s'", array($subsite_configs['TABLE_PREFIX'], 'version'), TRUE);
@@ -666,13 +683,11 @@ class Subsite {
 			$msg->addError(array('CREATE_MYSQL_ACCT_FAILED', $mysql_account, mysql_error($db_multisite), $super_mysql_acccount));
 			return false;
 		}
-		debug($subsite_db_name);
-		//$privileges = "SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER";
+	    // $privileges = "SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER";
 		$privileges = "ALL PRIVILEGES";
 		$sql = "GRANT ".$privileges." ON `" . $subsite_db_name . 
 		       "`.* TO '" . $mysql_account . "'@'" . $db_host . "'";
 		       
-		debug($sql);
 		if (!mysql_query($sql, $db_multisite)) {
 			$msg->addError(array('GRANT_PRIV_FAILED', $super_mysql_acccount));
 			return false;
