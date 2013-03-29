@@ -68,6 +68,7 @@ INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_CREATE_TABLE_FAIL','
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_TABLE_ALTERED','Table %s altered successfully.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_TABLE_FIELD_EXIST','Table %s fields already exists. Skipping.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_TABLE_FIELD_DROPPED','Table %s fields already dropped. Skipping.',now(),'');
+INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_UPDATE_PRIV_SUCCESS','Success at granting privilege to mysql accounts.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_ALTER_TABLE_FAIL','Table %s alteration failed.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_MULTISITE_CONFIG_FILE_NOT_EXIST','Cannot find the multisite config file "%s". Open the  "Initial Configuration" tab above and follow the directions to create it and setup your ATutor site to accommodate subsites.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_SUBSITE_ALREADY_EXIST','%1s already exists. Please pick another site name. Examples: %2s',now(),'');
@@ -75,6 +76,7 @@ INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_SHELL_PERMISSION','C
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_UPDATE_DB_FAILED','Failed at updating database: <br /> %1s',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_CREATE_MYSQL_ACCT_FAILED','Failed at creating mysql account "%1s" with following error: <br />%2s.<br /> Check whether mysql account "%3s" for subsite creation has this privilege.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_GRANT_PRIV_FAILED','Failed at granting privilege to mysql accounts. Check whether the mysql account "%1s" for subsite creation has this privilege.',now(),'');
+INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_FLUSH_PRIV_FAILED','Failed at flushing privilege to mysql accounts. Check whether the mysql account "%s" for subsite creation has this privilege.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_CREATE_SUBSITE_SUCCESSFUL','The subsite has been created successfully. Access it at %1s with these logins: Admin ID: %2s Admin password: %3s and Instructor ID: %4s Instructor password: %5s.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_SUBSITE_TABLES_CREATED','The tables have been created successfully.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_MYSQL_ACCT_CREATED','Mysql account "%s" has been created successfully.',now(),'');
@@ -85,6 +87,7 @@ INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_BAD_NAME','Your %1s 
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_MAINSITE_DIR_NOT_FOUND','Failed at locating the main site directory.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_NO_DB_PRIVILEGE','"%1s@%2s" does not have enough database privilege to perform upgrade on subsite "%3s".',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_LANG_TEXT_SQL_NOT_FOUND','Cannot find the language text SQL file "%s".',now(),'');
+INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_ONE_INVALID_URL','One of the URL, %s, provided is invalid',NOW(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_CERTAIN_EMAIL_INVALID','%s is invalid.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_SUBSITE_UPGRADED','The subsite <span style="font-weight:bold">%s</span> has been upgraded successfully.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_CONFIRM_DELETE_SUBSITE_1','Are you sure you want to <strong>Delete</strong> the subsite <strong><em>%s</em></strong>?',now(),'');
