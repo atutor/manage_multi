@@ -417,7 +417,7 @@ class Subsite {
 	 * Check if the url is the valid
 	 */
 	private function get_valid_url($url) {
-		return preg_match('/^[A-Za-z0-9.]+$/', $url) ? $url : false;
+		return preg_match('/^[A-Za-z0-9-_.]+$/', $url) ? $url : false;
 	}
 	/** 
 	 * Return the subsite information
