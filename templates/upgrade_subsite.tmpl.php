@@ -26,8 +26,8 @@
             <tr class="AT_subsites_row">
                  <td class="fl-tabs-center"><input type="checkbox" name="site_url[]" value="<?php echo $row['site_url']; ?>" id="<?php echo $row['site_url']; ?>" <?php if ($row['version'] == VERSION) {echo 'disabled="disabled" '; } ?>/></td>
                 <td><?php echo $row['site_url']; ?></td>
-                <?php if(isset($row['update_date']) && $row['update_date'] != ''){ ?>
-                    <td><?php echo $row['update_date']; ?></td>
+                <?php if(isset($row['updated_date']) && $row['updated_date'] != ''){ ?>
+                    <td><?php echo $row['updated_date']; ?></td>
                 <?php }else{ ?>
                     <td><?php echo _AT('na'); ?></td>
                 <?php } ?>
