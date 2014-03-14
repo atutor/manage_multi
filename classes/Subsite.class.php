@@ -130,32 +130,6 @@ class Subsite {
 			return false;
 		}
 		
-		// **** create and switch to subsite database ****
-		// ToDo: Backup the global db due to the flaw that $sqlUtility->queryFromFile() excutes the query file on global db instance $db
-		global $db;
-		$backup_db = $db;
-		
-		$subsite_db_name = $this->get_unique_db_name($this->site_url, DB_HOST_MULTISITE, DB_PORT_MULTISITE, DB_USER_MULTISITE, DB_PASSWORD_MULTISITE);
-		$db = create_and_switch_db(DB_HOST_MULTISITE, DB_PORT_MULTISITE, DB_USER_MULTISITE, DB_PASSWORD_MULTISITE, TABLE_PREFIX_MULTISITE, $subsite_db_name, false);
-		if ($msg->containsErrors()) {
-			$this->finalize();
-			return false;
-		}
-		
-		// **** import languages and tables into subsite database ****
-		$sqlUtility = new SqlUtility();
-		$sqlUtility->queryFromFile(AT_INCLUDE_PATH . 'install/db/atutor_schema.sql', TABLE_PREFIX_MULTISITE, false);
-		$sqlUtility->queryFromFile(AT_INCLUDE_PATH . 'install/db/atutor_language_text.sql', TABLE_PREFIX_MULTISITE, false);
-		if ($msg->containsErrors()) {
-			$this->finalize();
-			return false;
-		}
-		
-		// revert back the global db instance
-		$db = $backup_db;
-		
-		$msg->addFeedback('SUBSITE_TABLES_CREATED');
-		
 		// **** create mysql user/pwd for subsite database ****
 		// the super mysql id for creating mysql user is stored in include/config_multisite.inc.php
 		$mysql_account = $this->get_unique_mysql_account($site_name);
@@ -165,7 +139,33 @@ class Subsite {
 			$this->finalize();
 			return false;
 		}
+		
 		$msg->addFeedback(array('MYSQL_ACCT_CREATED', $mysql_account));
+		// **** create and switch to subsite database ****
+		// ToDo: Backup the global db due to the flaw that $sqlUtility->queryFromFile() excutes the query file on global db instance $db
+		global $db;
+		$backup_db = $db;
+		
+		$subsite_db_name = $this->get_unique_db_name($this->site_url, DB_HOST_MULTISITE, DB_PORT_MULTISITE, DB_USER_MULTISITE, DB_PASSWORD_MULTISITE);
+		$db = create_and_switch_db(DB_HOST_MULTISITE, DB_PORT_MULTISITE, DB_USER_MULTISITE, DB_PASSWORD_MULTISITE, TABLE_PREFIX_MULTISITE, $subsite_db_name, false);
+		
+		if ($msg->containsErrors()) {
+			$this->finalize();
+			return false;
+		}
+		
+		// **** import languages and tables into subsite database ****
+		$sqlUtility = new SqlUtility();
+		$sqlUtility->queryFromFile(AT_INCLUDE_PATH . 'install/db/atutor_schema.sql', TABLE_PREFIX_MULTISITE, false);
+		$sqlUtility->queryFromFile(AT_INCLUDE_PATH . 'install/db/atutor_language_text.sql', TABLE_PREFIX_MULTISITE, false);
+		
+		if ($msg->containsErrors() == true) {
+			$this->finalize();
+			return false;
+		}
+		
+
+		$msg->addFeedback('SUBSITE_TABLES_CREATED');
 		
 		// **** add admin/instructor accounts ****
 		$admin_pwd = $this->get_random_string(10);
@@ -219,7 +219,8 @@ class Subsite {
 		$this->enabled = $enabled;
 		
 		$msg->addFeedback(array('CREATE_SUBSITE_SUCCESSFUL', $full_site_url, $this->default_admin_user_name, $admin_pwd, $instructor_username, $instructor_pwd));
-		
+				// revert back the global db instance
+		$db = $backup_db;
 		$this->finalize();
 		return true;
 	}
@@ -384,27 +385,32 @@ class Subsite {
 		return $this->enabled ? true : false;
 	}
 	
-	/**
-	 * Return the ATutor version for the current subsite
-	 * Use to determine if an upgrade is needed
-	 */
-	public function get_atutor_version() {
-		global $db;
-		
-		$db_main_site = $db;
-		
-		$subsite_configs = $this->get_subsite_configs();
-		
-		$db = mysql_connect($subsite_configs['DB_HOST'] . ':' . $subsite_configs['DB_PORT'], $subsite_configs['DB_USER'], $subsite_configs['DB_PASSWORD']);
-		mysql_select_db($subsite_configs['DB_NAME'], $db);
-		
-		$rows = queryDB("SELECT * FROM %sconfig WHERE name='%s'", array($subsite_configs['TABLE_PREFIX'], 'version'), TRUE);
-		
-		$db = $db_main_site;
-		$this->finalize();
-		
-		return count($rows) > 0 ? $rows['value'] : MM_MULTISITE_START_VERSION;
-	}
+    /**
+    * Return the ATutor version for the current subsite
+    * Use to determine if an upgrade is needed
+    */
+    public function get_atutor_version() {
+        global $db;
+
+        $db_main_site = $db;
+
+        $subsite_configs = $this->get_subsite_configs();
+
+        //$db = mysql_connect($subsite_configs['DB_HOST'] . ':' . $subsite_configs['DB_PORT'], $subsite_configs['DB_USER'], $subsite_configs['DB_PASSWORD']);
+        //mysql_select_db($subsite_configs['DB_NAME'], $db);
+        $db = at_db_connect($subsite_configs['DB_HOST'] , $subsite_configs['DB_PORT'], $subsite_configs['DB_USER'], $subsite_configs['DB_PASSWORD']);
+        at_db_select($subsite_configs['DB_NAME'], $db);
+
+        $rows = queryDB("SELECT * FROM %sconfig WHERE name='%s'", array($subsite_configs['TABLE_PREFIX'], 'version'), TRUE);
+
+        $db = $db_main_site;
+        $this->finalize();
+
+        return count($rows) > 0 ? $rows['value'] : MM_MULTISITE_START_VERSION;
+    }
+
+
+
 	
 	/**
 	 * Return the real path to the main site directory
@@ -423,11 +429,16 @@ class Subsite {
 	 * Return the subsite information
 	 */
 	private function get_subsite_info($site_url) {
-		global $db_multisite, $addslashes;
-		
+		global $db_multisite, $addslashes, $db;
+		$db_tmp = $db;
+		$db = $db_multisite;
+		//$sql = "SELECT * FROM " . TABLE_PREFIX_MULTISITE . "subsites where site_url = '" . $addslashes($site_url) . "'";
+		//$result = mysql_query($sql, $db_multisite);
 		$sql = "SELECT * FROM " . TABLE_PREFIX_MULTISITE . "subsites where site_url = '" . $addslashes($site_url) . "'";
-		$result = mysql_query($sql, $db_multisite);
-		return mysql_fetch_assoc($result);
+		$row = queryDB($sql, array(), TRUE);
+        $db = $db_tmp;
+		//return mysql_fetch_assoc($result);
+		return $row;
 	}
 	
 	/**
@@ -486,25 +497,33 @@ class Subsite {
 	 * Set enable/disable flag
 	 */
 	private function set_status($site_url, $enable) {
-		global $db_multisite, $addslashes;
-		
+		global $db_multisite, $addslashes, $db;
+		$db_tmp = $db;
+		$db = $db_multisite;		
 		$enable = intval($enable);
 		
+		//$sql = "UPDATE " . TABLE_PREFIX_MULTISITE . "subsites SET enabled = '" . $enable . "' WHERE site_url = '" . $addslashes($site_url) . "'";
+		//return mysql_query($sql, $db_multisite);
 		$sql = "UPDATE " . TABLE_PREFIX_MULTISITE . "subsites SET enabled = '" . $enable . "' WHERE site_url = '" . $addslashes($site_url) . "'";
-		return mysql_query($sql, $db_multisite);
+		$result = queryDB($sql, array());
+		return $result;
 	}
 	
 	/**
 	 * Remove subsite from table "subsites"
 	 */
 	private function remove_table_entry($site_url) {
-		global $db_multisite, $addslashes, $msg;
-		
+		global $db_multisite, $addslashes, $msg, $db;
+		$db_tmp = $db;
+		$db = $db_multisite;
 		$sql = "DELETE FROM " . TABLE_PREFIX_MULTISITE . "subsites WHERE site_url = '" . $addslashes($site_url) . "'";
-		if (!mysql_query($sql, $db_multisite)) {
+		$result = queryDB($sql, array());
+		//if (!mysql_query($sql, $db_multisite)) {
+		if(count($result) == 0){
 			$msg->addError('CANNOT_REMOVE_TABLE_ENTRY');
 			return false;
 		}
+		$db = $db_tmp;
 		return true;
 	}
 	
@@ -599,8 +618,8 @@ class Subsite {
 	 */
 	private function switch_subsite_manage_db() {
 		global $db_multisite;
-		
-		mysql_select_db(DB_NAME_MULTISITE, $db_multisite);
+		at_db_select(DB_NAME_MULTISITE, $db_multisite);		
+		//mysql_select_db(DB_NAME_MULTISITE, $db_multisite);
 	}
 	
 	/**
@@ -610,14 +629,24 @@ class Subsite {
 		global $db_multisite, $db;
 		
 		// The selected db is still the ATutor main db at this point
+		/*
 		$sql = "SELECT value FROM " . TABLE_PREFIX . "config WHERE name='session_path'";
 		$result = mysql_query($sql, $db);
 		$row = mysql_fetch_assoc($result);
+		*/
+		$sql = "SELECT value FROM " . TABLE_PREFIX . "config WHERE name='session_path'";
+		$row = queryDB($sql, array(), TRUE);
+
 		$this->session_path = $row['value'];
-		
+		/*
 		$sql = "SELECT value FROM " . TABLE_PREFIX . "config WHERE name='contact_email'";
 		$result = mysql_query($sql, $db);
 		$row = mysql_fetch_assoc($result);
+		*/
+		$sql = "SELECT value FROM " . TABLE_PREFIX . "config WHERE name='contact_email'";
+		$result = queryDB($sql, array(), TRUE);
+
+
 		$this->main_site_contact_email = $row['value'];
 		
 		$this->switch_subsite_manage_db();
@@ -646,12 +675,16 @@ class Subsite {
 	 * @return true/false
 	 */
 	private function is_mysql_account_unique($account_name) {
-		global $db_multisite;
+		global $db_multisite, $db;
 		
-		$sql = "select user from mysql.user where user='" . $account_name . "'";
-		$result = mysql_query($sql, $db_multisite);
-		
-		return mysql_num_rows($result) == 0 ? true : false;
+		//$sql = "select user from mysql.user where user='" . $account_name . "'";
+		//$result = mysql_query($sql, $db_multisite);
+		$db_tmp = $db;
+		$db = $db_multisite;
+        $sql = "select user from mysql.user where user='" . $account_name . "'";
+		$result = queryDB($sql, array());		
+		return count($result) == 0 ? true : false;
+		//return mysql_num_rows($result) == 0 ? true : false;
 	}
 	
 	/**
@@ -674,40 +707,46 @@ class Subsite {
 	 * Create mysql user and grant full permission on subsite database
 	 */
 	private function create_mysql_user($db_host, $mysql_account, $subsite_db_name, $super_mysql_acccount) {
-		global $db_multisite, $msg;
+		global $db_multisite, $db, $msg;
 		
 		$mysql_pwd = $this->get_random_string(10);
 		
 		$sql = "CREATE USER '" . $mysql_account . "'@'" . $db_host . "' IDENTIFIED BY '" . $mysql_pwd . "'";
-		if (!mysql_query($sql, $db_multisite)) {
+		//if (!mysql_query($sql, $db_multisite)) {
+		$db_tmp = $db;
+		$db = $db_multisite;
+		if (queryDB($sql, array()) != '0') {
 			$msg->addError(array('CREATE_MYSQL_ACCT_FAILED', $mysql_account, mysql_error($db_multisite), $super_mysql_acccount));
 			return false;
 		}
-	    // $privileges = "SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER";
-		$privileges = "ALL PRIVILEGES";
-		$sql = "GRANT ".$privileges." ON `" . $subsite_db_name . 
+		
+		$sql = "GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP ON `" . $subsite_db_name . 
 		       "`.* TO '" . $mysql_account . "'@'" . $db_host . "'";
-		       
-		if (!mysql_query($sql, $db_multisite)) {
+		//if (!mysql_query($sql, $db_multisite)) {
+		if (queryDB($sql, array()) != '0') {
 			$msg->addError(array('GRANT_PRIV_FAILED', $super_mysql_acccount));
 			return false;
 		}
-		
+		$db = $db_tmp;
 		return $mysql_pwd;
 	}
 	
 	/**
 	 * Drop database
 	 */
-	private function drop_db($db, $mysql_super_account) {
-		global $db_multisite, $msg;
+	private function drop_db($db_name, $mysql_super_account) {
+		global $db_multisite, $msg, $db;
 		
-		$sql = "DROP DATABASE " . $db;
-		if (!mysql_query($sql, $db_multisite)) {
-			$msg->addError(array('DROP_DB_FAILED', $db, mysql_error($db_multisite), $mysql_super_account));
+		$sql = "DROP DATABASE " . $db_name;
+		$db_tmp = $db;
+		$db = $db_multisite;
+		//if (!mysql_query($sql, $db_multisite)) {
+		if (!queryDB($sql, array())) {
+			//$msg->addError(array('DROP_DB_FAILED', $db, mysql_error($db_multisite), $mysql_super_account));
+			$msg->addError(array('DROP_DB_FAILED', $db_name, at_db_error($db), $mysql_super_account));
 			return false;
 		}
-		
+		$db = $db_tmp;
 		return true;
 	}
 	
@@ -715,15 +754,19 @@ class Subsite {
 	 * Drop mysql user account
 	 */
 	private function drop_mysql_user($db_host, $mysql_account, $mysql_super_account) {
-		global $db_multisite, $msg;
-		
+		global $db_multisite, $msg, $db;
+		$db_tmp = $db;
+		$db = $db_multisite;
 		$sql = "DROP USER '" . $mysql_account . "'@'" . $db_host . "'";
 		
-		if (!mysql_query($sql, $db_multisite)) {
-			$msg->addError(array('DROP_MYSQL_ACCT_FAILED', $mysql_account, mysql_error($db_multisite), $mysql_super_account));
-			return false;
+		//if (!mysql_query($sql, $db_multisite)) {
+		$result = queryDB($sql, array());
+		if ($result == 0) {
+			//$msg->addError(array('DROP_MYSQL_ACCT_FAILED', $mysql_account, mysql_error($db_multisite), $mysql_super_account));
+			//$msg->addError(array('DROP_MYSQL_ACCT_FAILED', $mysql_account, at_db_error($db), $mysql_super_account));
+			//return false;
 		}
-		
+		$db = $db_tmp;
 		return true;
 	}
 	
@@ -734,18 +777,24 @@ class Subsite {
 	 * @return true/false
 	 */
 	private function update_table($site_url, $version, $created_date, $updated_date, $enabled) {
-		global $db_multisite, $msg;
+		global $db_multisite, $db, $msg;
 		
+		$db_tmp = $db;
+		$db = $db_multisite;
 		// insert the new site into db
-		$sql = "INSERT INTO " . TABLE_PREFIX_MULTISITE . "subsites(site_url, version, created_date, updated_date, enabled) VALUES('" .$site_url ."','" .$version ."','".$created_date."', '".$updated_date."', '" . $enabled ."')";
+		$created_date = date("Y-m-d H:i:s");
+		$sql = "INSERT INTO " . TABLE_PREFIX_MULTISITE . "subsites(site_url, version, created_date, enabled) VALUES('" .$site_url ."', '".VERSION."','".$created_date."', '" . $enabled ."')";
 		
-		if(mysql_query($sql, $db_multisite)){
+		//if(mysql_query($sql, $db_multisite)){
+		if(queryDB($sql,array()) > 0){
+		    $db = $db_tmp;
 			return true;
 		} else{
-			$msg->addError(array('UPDATE_DB_FAILED', mysql_error()));
+			//$msg->addError(array('UPDATE_DB_FAILED', mysql_error()));
+			$msg->addError(array('UPDATE_DB_FAILED', at_db_error()));
+			$db = $db_tmp;
 			return false;
-		}
-	}
+		}	}
 	
 	/**
 	 * Update table "subsites"
@@ -804,12 +853,20 @@ class Subsite {
 	 * @return true or false
 	 */
 	private function is_site_unique($site_url) {
-		global $db_multisite;
-		
+		global $db_multisite, $db;
+		$db_tmp = $db;
+		$db = $db_multisite;
+		/*
 		$sql = "SELECT * FROM " . TABLE_PREFIX_MULTISITE. "subsites WHERE site_url='" . $site_url . "'";
 		$result = mysql_query($sql, $db_multisite);
+		*/
+		$sql = "SELECT * FROM " . TABLE_PREFIX_MULTISITE. "subsites WHERE site_url='" . $site_url . "'";
+		$result = queryDB($sql, array());		
+		$subsite_count = count($result);
 		
-		return (mysql_num_rows($result) == 0 && !is_dir($this->subsite_main_dir . $site_url)) ? true : false;
+		$db = $db_tmp;
+		//return (mysql_num_rows($result) == 0 && !is_dir($this->subsite_main_dir . $site_url)) ? true : false;
+		return ($subsite_count == 0 && !is_dir($this->subsite_main_dir . $site_url)) ? true : false;
 	}
 	
 	/**
@@ -847,12 +904,14 @@ class Subsite {
 		global $db_multisite;
 		
 		$db_prefix = str_replace(".","_", $db_prefix);
-		if (!mysql_select_db($db_prefix, $db_multisite)) {
+		//if (!mysql_select_db($db_prefix, $db_multisite)) {
+		if (!at_db_select($db_prefix, $db_multisite)) {
 			return $db_prefix;
 		} else {
 			while (true) {
 				$db_name = $this->get_suffixed_string($db_prefix);
-				if (!mysql_select_db($db_name, $db_multisite)) {
+				//if (!mysql_select_db($db_name, $db_multisite)) {
+				if (!at_db_select($db_name, $db_multisite)) {
 					return $db_name;
 				}
 			}
@@ -884,7 +943,8 @@ class Subsite {
 		global $db;
 		
 		// switch back to the ATutor main database
-		mysql_select_db(DB_NAME, $db);
+        at_db_select(DB_NAME, $db);
+		//mysql_select_db(DB_NAME, $db);
 	}
 	
 }

@@ -37,7 +37,8 @@ if (!$multisite_installed) {
 }
 
 if (defined('DB_NAME_MULTISITE')) {
-	$db_multisite = @mysql_connect(DB_HOST_MULTISITE . ':' . DB_PORT_MULTISITE, DB_USER_MULTISITE, DB_PASSWORD_MULTISITE);	
+	//$db_multisite = @mysql_connect(DB_HOST_MULTISITE . ':' . DB_PORT_MULTISITE, DB_USER_MULTISITE, DB_PASSWORD_MULTISITE);	
+	$db_multisite = at_db_connect(DB_HOST_MULTISITE, DB_PORT_MULTISITE, DB_USER_MULTISITE, DB_PASSWORD_MULTISITE, '');	
 
 	if (!$db_multisite) {
 		/* AT_ERROR_NO_DB_CONNECT */

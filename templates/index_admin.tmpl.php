@@ -20,12 +20,16 @@
 </tr>
 </tfoot>
 <tbody>
-<?php if (mysql_num_rows($result) == 0) { ?>
+<?php //if (mysql_num_rows($result) == 0) { ?>
+<?php if (count($rows_subsites) == 0) { ?>
 	<tr>
 		<td colspan="5"><?php echo _AT('none_found'); ?></td>
 	</tr>
 <?php } else {
-		while ($row = mysql_fetch_assoc($result)): ?>
+        foreach($rows_subsites as $row){ 
+        
+		//while ($row = mysql_fetch_assoc($result)): 
+		?>
 			<tr class="AT_subsites_row">
 				<td><input type="radio" name="site_url" value="<?php echo $row['site_url']; ?>" id="<?php echo $row['site_url']; ?>" /></td>
 				<td><?php echo $row['site_url']; ?></td>
@@ -39,7 +43,10 @@
 					}
 				?></td>
 			</tr>
-		<?php endwhile; ?>
+		<?php 
+		}
+		//endwhile; 
+		?>
 	<?php } ?>
 </tbody>
 </table>

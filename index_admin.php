@@ -21,13 +21,17 @@ if(isset($_POST['delete'], $_POST['site_url'])){
 }
 
 // Display a table listing all subsites.
-mysql_select_db(DB_NAME_MULTISITE, $db_multisite);
+//mysql_select_db(DB_NAME_MULTISITE, $db_multisite);
+$db_tmp = $db;
+$db = $db_multisite;
+at_db_select(DB_NAME_MULTISITE, $db);
 
 $sql = "SELECT * from " . TABLE_PREFIX_MULTISITE . "subsites";
-$result = mysql_query($sql, $db_multisite);
-
-mysql_select_db(DB_NAME, $db);
-
+//$result = mysql_query($sql, $db_multisite);
+$rows_subsites = queryDB($sql, array());
+$db = $db_tmp;
+//mysql_select_db(DB_NAME, $db);
+at_db_select(DB_NAME, $db);
 $_custom_head = '    <script src="'.$_base_path.'mods/manage_multi/js/manage_multi.js"></script>';
 require (AT_INCLUDE_PATH.'header.inc.php');
 $msg->printAll();

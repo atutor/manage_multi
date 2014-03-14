@@ -52,7 +52,8 @@ if ($_POST['submit']){
 		$sqlUtility->queryFromFile('include/atutor_multisite_schema.sql', $addslashes($_POST['tb_prefix']), false);
 		
 		// switch to the main database
-		@mysql_select_db(DB_NAME, $db);
+		//@mysql_select_db(DB_NAME, $db);
+		at_db_select(DB_NAME, $db);
 	
 		// database is created successfully
 		if (!$msg->containsErrors()) {
