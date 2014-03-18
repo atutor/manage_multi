@@ -129,7 +129,16 @@ class Subsite {
 			$this->finalize();
 			return false;
 		}
+	
 		
+		$msg->addFeedback(array('MYSQL_ACCT_CREATED', $mysql_account));
+		// **** create and switch to subsite database ****
+		// ToDo: Backup the global db due to the flaw that $sqlUtility->queryFromFile() excutes the query file on global db instance $db
+		global $db;
+		$backup_db = $db;
+		
+		$subsite_db_name = $this->get_unique_db_name($this->site_url, DB_HOST_MULTISITE, DB_PORT_MULTISITE, DB_USER_MULTISITE, DB_PASSWORD_MULTISITE);
+
 		// **** create mysql user/pwd for subsite database ****
 		// the super mysql id for creating mysql user is stored in include/config_multisite.inc.php
 		$mysql_account = $this->get_unique_mysql_account($site_name);
@@ -139,14 +148,7 @@ class Subsite {
 			$this->finalize();
 			return false;
 		}
-		
-		$msg->addFeedback(array('MYSQL_ACCT_CREATED', $mysql_account));
-		// **** create and switch to subsite database ****
-		// ToDo: Backup the global db due to the flaw that $sqlUtility->queryFromFile() excutes the query file on global db instance $db
-		global $db;
-		$backup_db = $db;
-		
-		$subsite_db_name = $this->get_unique_db_name($this->site_url, DB_HOST_MULTISITE, DB_PORT_MULTISITE, DB_USER_MULTISITE, DB_PASSWORD_MULTISITE);
+
 		$db = create_and_switch_db(DB_HOST_MULTISITE, DB_PORT_MULTISITE, DB_USER_MULTISITE, DB_PASSWORD_MULTISITE, TABLE_PREFIX_MULTISITE, $subsite_db_name, false);
 		
 		if ($msg->containsErrors()) {
@@ -288,7 +290,7 @@ class Subsite {
 		
 		// Backup the database credentials and connection for the main site
 		$db_main_site = $db;
-		
+		$db = $db_multisite;
 		$subsite_configs = $this->get_subsite_configs();
 		
 		// Give more privilege to users created with v2.1
@@ -298,15 +300,17 @@ class Subsite {
             $privileges = "ALL PRIVILEGES";
             $sql = "GRANT ".$privileges." ON `" . $subsite_configs['DB_NAME'] . 
                    "`.* TO '" . $subsite_configs['DB_USER'] . "'@'" . $subsite_configs['DB_HOST']. "'";
-                   
-            if (!mysql_query($sql, $db_multisite)) {
+            //if (!mysql_query($sql, $db_multisite)) {    
+            $result = queryDB($sql, array());
+            if ($result == 0) {
                 $msg->addError(array('GRANT_PRIV_FAILED', $super_mysql_acccount));
                 return false;
             } 
             
             $sql = "FLUSH PRIVILEGES;";
-
-            if(!mysql_query($sql, $db_multisite)){
+            //if(!mysql_query($sql, $db_multisite)){
+            $result = queryDB($sql, array());
+            if($result == 0){
                 $msg->addError(array('FLUSH_PRIV_FAILED', $super_mysql_acccount));
             }else{
 		
@@ -314,9 +318,15 @@ class Subsite {
 		    }
 		} 
 		
-		$db = mysql_connect($subsite_configs['DB_HOST'] . ':' . $subsite_configs['DB_PORT'], $subsite_configs['DB_USER'], $subsite_configs['DB_PASSWORD']);
-		mysql_select_db($subsite_configs['DB_NAME'], $db);
-		
+		//$db = mysql_connect($subsite_configs['DB_HOST'] . ':' . $subsite_configs['DB_PORT'], $subsite_configs['DB_USER'], $subsite_configs['DB_PASSWORD']);
+		//mysql_select_db($subsite_configs['DB_NAME'], $db);
+		if(defined('MYSQLI_ENABLED')){
+		    $db = at_db_connect($subsite_configs['DB_HOST'] , $subsite_configs['DB_PORT'], $subsite_configs['DB_USER'], $subsite_configs['DB_PASSWORD'], $subsite_configs['DB_NAME']);
+		}else{
+			$db = at_db_connect($subsite_configs['DB_HOST'] , $subsite_configs['DB_PORT'], $subsite_configs['DB_USER'], $subsite_configs['DB_PASSWORD']);
+		    at_db_select($subsite_configs['DB_NAME'], $db);	
+		}
+			
 		// get current version
 		$rows = queryDB("SELECT * FROM %sconfig WHERE name='%s'", array($subsite_configs['TABLE_PREFIX'], 'version'), TRUE);
 		$current_version = (count($rows) > 0) ? $rows['value'] : MM_MULTISITE_START_VERSION;
@@ -398,8 +408,13 @@ class Subsite {
 
         //$db = mysql_connect($subsite_configs['DB_HOST'] . ':' . $subsite_configs['DB_PORT'], $subsite_configs['DB_USER'], $subsite_configs['DB_PASSWORD']);
         //mysql_select_db($subsite_configs['DB_NAME'], $db);
-        $db = at_db_connect($subsite_configs['DB_HOST'] , $subsite_configs['DB_PORT'], $subsite_configs['DB_USER'], $subsite_configs['DB_PASSWORD']);
-        at_db_select($subsite_configs['DB_NAME'], $db);
+        
+        if(defined('MYSQLI_ENABLED')){
+            $db = at_db_connect($subsite_configs['DB_HOST'] , $subsite_configs['DB_PORT'], $subsite_configs['DB_USER'], $subsite_configs['DB_PASSWORD'], $subsite_configs['DB_NAME']);      
+        }else{
+            $db = at_db_connect($subsite_configs['DB_HOST'] , $subsite_configs['DB_PORT'], $subsite_configs['DB_USER'], $subsite_configs['DB_PASSWORD']);
+            at_db_select($subsite_configs['DB_NAME'], $db);
+        }
 
         $rows = queryDB("SELECT * FROM %sconfig WHERE name='%s'", array($subsite_configs['TABLE_PREFIX'], 'version'), TRUE);
 
@@ -727,6 +742,8 @@ class Subsite {
 			$msg->addError(array('GRANT_PRIV_FAILED', $super_mysql_acccount));
 			return false;
 		}
+		global $sqlout;
+		debug_to_log($sqlout);
 		$db = $db_tmp;
 		return $mysql_pwd;
 	}
@@ -804,13 +821,18 @@ class Subsite {
 	 * @return true/false
 	 */
 	private function update_subsite_info($site_url, $version,  $updated_date) {
-		global $db_multisite, $msg;
-		
+		global $db_multisite, $msg, $db;
+		$db_tmp = $db;
+		$db = $db_multisite;
 		// insert the new site into db
 		$sql = "UPDATE " . TABLE_PREFIX_MULTISITE . "subsites SET updated_date = '$updated_date', version = '$version' WHERE site_url = '$site_url'";
-		if(mysql_query($sql, $db_multisite)){
+		//if(mysql_query($sql, $db_multisite)){
+		$result = queryDB($sql, array());
+		if($result > 0){
+		    $db = $db_tmp;
 			return true;
 		} else{
+			$db = $db_tmp;
 			$msg->addError(array('UPDATE_DB_FAILED', mysql_error()));
 			return false;
 		}
