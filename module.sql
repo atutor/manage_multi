@@ -75,9 +75,9 @@ INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_SHELL_PERMISSION','C
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_UPDATE_DB_FAILED','Failed at updating database: <br /> %1s',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_CREATE_MYSQL_ACCT_FAILED','Failed at creating mysql account "%1s" with following error: <br />%2s.<br /> Check whether mysql account "%3s" for subsite creation has this privilege.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_GRANT_PRIV_FAILED','Failed at granting privilege to mysql accounts. Check whether the mysql account "%1s" for subsite creation has this privilege.',now(),'');
-INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_CREATE_SUBSITE_SUCCESSFUL','The subsite has been created successfully. Access it at %1s with these logins: Admin ID: %2s Admin password: %3s and Instructor ID: %4s Instructor password: %5s.',now(),'');
+INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_CREATE_SUBSITE_SUCCESSFUL','The subsite has been created successfully. Access it at: <br> <a href="%1s">%1s</a> <br/><br/>with these logins: <br /><br />Admin ID: %2s <br/>Admin password: %3s <br/>and<br/> Instructor ID: %4s <br/>Instructor password: %5s.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_SUBSITE_TABLES_CREATED','The tables have been created successfully.',now(),'');
-INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_MYSQL_ACCT_CREATED','Mysql account "%s" has been created successfully.',now(),'');
+INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_MYSQL_ACCT_CREATED','Mysql account has been created successfully.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_CONFIG_FILE_WRITTEN','The config file "%s" has been written.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_FEEDBACK_MANAGE_TABLE_UPDATED','The subsite management table has been updated.',now(),'');
 INSERT INTO `language_text` VALUES ('en', '_msgs','AT_ERROR_DIR_CANNOT_CREATE','%s directory does not exist and cannot be created.',now(),'');
