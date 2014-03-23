@@ -11,26 +11,14 @@ if(isset($_POST['upgrade'], $_POST['site_url']) && is_array($_POST['site_url']))
 	exit;
 }
 // Display a table listing all subsites.
-//mysql_select_db(DB_NAME_MULTISITE, $db_multisite);
-//global $db;
 $db_tmp = $db;
  
 at_db_select(DB_NAME_MULTISITE, $db);
 
-//$original_rows = queryDB("SELECT * from " . TABLE_PREFIX_MULTISITE . "subsites");
-
 $sql = "SELECT * from " . TABLE_PREFIX_MULTISITE . "subsites";
-//$result = mysql_query($sql,$db_multisite);
-
 $original_rows = queryDB($sql, array());
-//debug($original_rows);
-//$original_rows = array();
-//while($original_row = mysql_fetch_assoc($result)){
-//foreach($original_rows as $original_row){
-//    array_push($original_rows, $original_row);
-//}
-
 $rows = array();
+
 foreach ($original_rows as $original_row) {
 	$subsite = new Subsite($original_row['site_url']);
 	$row = $original_row;
@@ -38,8 +26,7 @@ foreach ($original_rows as $original_row) {
 	array_push($rows, $row);
 }
 
-at_db_select(DB_NAME, $db);
-
+$db = $db_tmp;
 $_custom_head = '    <script src="'.$_base_path.'mods/manage_multi/js/manage_multi.js"></script>';
 require (AT_INCLUDE_PATH.'header.inc.php');
 $msg->printAll();

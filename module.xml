@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="ISO-8859-1"?> 
 <module version="0.1"> 
     <name lang="en">ATutor MultiSite Manager</name> 
-    <description lang="en">This module is used to create and manage ATutor subsites. A single ATutor codebase can be used to run any number of independent ATutor sites as fully independent domains. This module can only be installed on an ATutor main site of a multisite installation, not on subsites.</description> 
+    <description lang="en">Intended for ATutor 2.2+. This module is used to create and manage ATutor subsites. A single ATutor codebase can be used to run any number of independent ATutor sites as fully independent domains. This module can only be installed on an ATutor main site of a multisite installation, not on subsites.</description> 
     <maintainers>
         <maintainer> 
             <name>ATutor Team</name> 
-            <email>info@atutor.ca</email> 
+            <email>support@atutorspaces.com</email> 
         </maintainer>
     </maintainers> 
     <url>http://atutor.ca</url> 
     <license>BSD</license> 
 	<release> 
-        <version>1.1</version> 
-        <date>2013-02-28</date> 
+        <version>1.3</version> 
+        <date>2014-03-31</date> 
         <state>stable</state> 
-        <notes>See the module's README file for full details on using this module.</notes> 
+        <notes>Changes in this version are primarily the conversion from mysql to queryDB() database access, intended for use with ATutor 2.2+. Otherwise funntionality is the same as that in the previous versions of this module.  See the module's README file for full details on using this module.</notes> 
     </release> 
 </module>
