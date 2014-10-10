@@ -59,10 +59,10 @@ to ensure it has write permission to the parent directory of [ATutor_root]. This
 The structure for the ATutor_manage_multisite table has changed in this version, and will need to be manually update to add these changes. Below are the Alter statements that will need to be run to update the table. Note that the TABLE PREFIX is not included in these statements, so be sure to add them in if your table uses them.
 
 # Alter in v1.1
-ALTER TABLE `subsites` ADD `version` DOUBLE NOT NULL AFTER `site_url` 
-ALTER TABLE `subsites` ADD `created_date` DATETIME NOT NULL AFTER `version` 
-ALTER TABLE `subsites` ADD `updated_date` DATETIME NOT NULL AFTER `created_date` 
-ALTER TABLE `subsites` CHANGE `version` `version` VARCHAR( 25 ) NOT NULL 
+ALTER TABLE `subsites` ADD `version` DOUBLE NOT NULL AFTER `site_url`; 
+ALTER TABLE `subsites` ADD `created_date` DATETIME NOT NULL AFTER `version`;
+ALTER TABLE `subsites` ADD `updated_date` DATETIME NOT NULL AFTER `created_date`;
+ALTER TABLE `subsites` CHANGE `version` `version` VARCHAR( 25 ) NOT NULL;
 
 # Example with table_prefix
 
